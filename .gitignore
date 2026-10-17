@@ -28,3 +28,15 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+# Archivos generados por Maven
+/target/
+
+# Archivos compilados de Java
+*.class
+
+# Configuracion local de IntelliJ
+.idea/
+
+# Archivos temporales
+*.log
