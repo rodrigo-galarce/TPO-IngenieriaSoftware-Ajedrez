@@ -1,4 +1,3 @@
-
 package ajedrez.dominio.modelo.tablero;
 
 import ajedrez.dominio.modelo.pieza.Pieza;
