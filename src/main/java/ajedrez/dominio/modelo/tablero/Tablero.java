@@ -53,4 +53,23 @@ public class Tablero {
             throw new IllegalArgumentException("Error. La posición está fuera del tablero");
         }
     }
+
+    public void moverPieza(Posicion origen, Posicion destino) {
+        if (!estaDentro(origen) || !estaDentro(destino)) {
+            throw new IllegalArgumentException("La posicion esta fuera del tablero");
+        }
+        if (origen.equals(destino)) {
+            throw new IllegalArgumentException("El origen y el destino son iguales");
+        }
+        Pieza pieza = obtenerPieza(origen);
+        if (pieza == null) {
+            throw new IllegalArgumentException("No hay una pieza en el origen");
+        }
+        Pieza ocupante = obtenerPieza(destino);
+        if (ocupante != null && ocupante.getColor() == pieza.getColor()) {
+            throw new IllegalArgumentException("No se puede capturar una pieza aliada");
+        }
+        casillas[destino.fila()][destino.columna()] = pieza;
+        casillas[origen.fila()][origen.columna()] = null;
+    }
 }
