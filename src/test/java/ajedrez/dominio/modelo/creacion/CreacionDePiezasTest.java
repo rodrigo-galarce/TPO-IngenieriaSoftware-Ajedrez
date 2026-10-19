@@ -41,4 +41,15 @@ class CreacionDePiezasTest {
         CreacionDePiezas fabrica = new CreacionDePiezas();
         assertThrows(IllegalArgumentException.class, () -> fabrica.registrar(TipoPieza.TORRE, MovimientoCaballo::new));
     }
+
+    @Test
+    void asignaLaEstrategiaCorrectaACadaTipo() {
+        CreacionDePiezas creador = new CreacionDePiezas();
+        assertInstanceOf(MovimientoPeon.class, creador.crear(TipoPieza.PEON, ColorPieza.BLANCO).getReglaMovimiento());
+        assertInstanceOf(MovimientoTorre.class, creador.crear(TipoPieza.TORRE, ColorPieza.BLANCO).getReglaMovimiento());
+        assertInstanceOf(MovimientoCaballo.class, creador.crear(TipoPieza.CABALLO, ColorPieza.BLANCO).getReglaMovimiento());
+        assertInstanceOf(MovimientoAlfil.class, creador.crear(TipoPieza.ALFIL, ColorPieza.BLANCO).getReglaMovimiento());
+        assertInstanceOf(MovimientoReina.class, creador.crear(TipoPieza.REINA, ColorPieza.BLANCO).getReglaMovimiento());
+        assertInstanceOf(MovimientoRey.class, creador.crear(TipoPieza.REY, ColorPieza.BLANCO).getReglaMovimiento());
+    }
 }

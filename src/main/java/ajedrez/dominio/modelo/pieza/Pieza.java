@@ -8,16 +8,11 @@ public class Pieza {
     private final ColorPieza color;
     private final IReglaMovimiento reglaMovimiento;
 
-    // constructor temporal para mantener los tests existentes
-    public Pieza(TipoPieza tipo, ColorPieza color) {
-        this(tipo, color, null);
-    }
-
     // constructor por inyeccion de dependencias
     public Pieza(TipoPieza tipo, ColorPieza color, IReglaMovimiento reglaMovimiento) {
         this.tipo = Objects.requireNonNull(tipo);
         this.color = Objects.requireNonNull(color);
-        this.reglaMovimiento = reglaMovimiento;
+        this.reglaMovimiento = Objects.requireNonNull(reglaMovimiento);
     }
 
     public TipoPieza getTipo() {

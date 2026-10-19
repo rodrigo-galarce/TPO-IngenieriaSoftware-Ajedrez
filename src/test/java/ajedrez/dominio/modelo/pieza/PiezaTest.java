@@ -18,4 +18,9 @@ class PiezaTest {
         assertEquals(TipoPieza.TORRE, torre.getTipo());
         assertEquals(ColorPieza.BLANCO, torre.getColor());
     }
+
+    @Test
+    void noPermiteCrearPiezaSinEstrategia() {
+        assertThrows(NullPointerException.class, () -> new Pieza(TipoPieza.TORRE,ColorPieza.BLANCO,null));
+    }
 }

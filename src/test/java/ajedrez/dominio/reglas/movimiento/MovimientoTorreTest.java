@@ -17,7 +17,6 @@ class MovimientoTorreTest {
     private Posicion origen;
     private CreacionDePiezas creador;
 
-
     @BeforeEach
     void prepararEscenario() {
         tablero = new Tablero(8, 8);
@@ -83,7 +82,7 @@ class MovimientoTorreTest {
 
     @Test
     void detectaCasillaAmenazadaConPiezaAliada() {
-        Pieza aliada = new Pieza(TipoPieza.PEON, ColorPieza.BLANCO);
+        Pieza aliada = creador.crear(TipoPieza.PEON, ColorPieza.BLANCO);
         tablero.colocarPieza(aliada, new Posicion(4, 6));
         boolean resultado = movimientoTorre.amenaza(tablero, origen, new Posicion(4, 6), ColorPieza.BLANCO);
         assertTrue(resultado);
