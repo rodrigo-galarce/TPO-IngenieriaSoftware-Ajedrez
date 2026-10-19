@@ -6,7 +6,7 @@ import ajedrez.dominio.modelo.pieza.Pieza;
 import ajedrez.dominio.modelo.tablero.Posicion;
 import ajedrez.dominio.modelo.tablero.Tablero;
 
-public class MovimientoTorre implements ReglaMovimiento {
+public class MovimientoTorre implements IReglaMovimiento {
     @Override
     public boolean esMovimientoValido(Tablero tablero, Posicion origen, Posicion destino, ColorPieza color) {
         if (!amenaza(tablero, origen, destino, color)) {

@@ -5,7 +5,7 @@ import ajedrez.dominio.modelo.pieza.Pieza;
 import ajedrez.dominio.modelo.tablero.Posicion;
 import ajedrez.dominio.modelo.tablero.Tablero;
 
-public class MovimientoAlfil implements ReglaMovimiento {
+public class MovimientoAlfil implements IReglaMovimiento {
     @Override
     public boolean esMovimientoValido(
             Tablero tablero,

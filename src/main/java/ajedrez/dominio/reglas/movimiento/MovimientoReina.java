@@ -4,9 +4,9 @@ import ajedrez.dominio.modelo.pieza.ColorPieza;
 import ajedrez.dominio.modelo.tablero.Posicion;
 import ajedrez.dominio.modelo.tablero.Tablero;
 
-public class MovimientoReina implements ReglaMovimiento {
-    private final ReglaMovimiento movimientoTorre;
-    private final ReglaMovimiento movimientoAlfil;
+public class MovimientoReina implements IReglaMovimiento {
+    private final IReglaMovimiento movimientoTorre;
+    private final IReglaMovimiento movimientoAlfil;
 
     public MovimientoReina() {
         this.movimientoTorre = new MovimientoTorre();

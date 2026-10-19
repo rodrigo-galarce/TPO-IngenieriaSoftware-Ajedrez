@@ -1,12 +1,12 @@
 package ajedrez.dominio.modelo.pieza;
 
-import ajedrez.dominio.reglas.movimiento.ReglaMovimiento;
+import ajedrez.dominio.reglas.movimiento.IReglaMovimiento;
 import java.util.Objects;
 
 public class Pieza {
     private final TipoPieza tipo;
     private final ColorPieza color;
-    private final ReglaMovimiento reglaMovimiento;
+    private final IReglaMovimiento reglaMovimiento;
 
     // constructor temporal para mantener los tests existentes
     public Pieza(TipoPieza tipo, ColorPieza color) {
@@ -14,7 +14,7 @@ public class Pieza {
     }
 
     // constructor por inyeccion de dependencias
-    public Pieza(TipoPieza tipo, ColorPieza color, ReglaMovimiento reglaMovimiento) {
+    public Pieza(TipoPieza tipo, ColorPieza color, IReglaMovimiento reglaMovimiento) {
         this.tipo = Objects.requireNonNull(tipo);
         this.color = Objects.requireNonNull(color);
         this.reglaMovimiento = reglaMovimiento;
@@ -28,7 +28,7 @@ public class Pieza {
         return color;
     }
 
-    public ReglaMovimiento getReglaMovimiento() {
+    public IReglaMovimiento getReglaMovimiento() {
         return reglaMovimiento;
     }
 }

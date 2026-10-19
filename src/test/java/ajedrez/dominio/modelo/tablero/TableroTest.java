@@ -3,11 +3,20 @@ package ajedrez.dominio.modelo.tablero;
 import ajedrez.dominio.modelo.pieza.Pieza;
 import ajedrez.dominio.modelo.pieza.TipoPieza;
 import ajedrez.dominio.modelo.pieza.ColorPieza;
+import ajedrez.dominio.modelo.creacion.CreacionDePiezas;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TableroTest {
+    private CreacionDePiezas creador;
+
+    @BeforeEach
+    void prepararEscenario() {
+        creador = new CreacionDePiezas();
+    }
+
     @Test
     void tableroNuevoEstaVacio() {
         // arrange
@@ -32,7 +41,7 @@ class TableroTest {
     void permiteColocarUnaPieza() {
         // arrange
         Tablero tablero = new Tablero(8, 8);
-        Pieza torre = new Pieza(TipoPieza.TORRE, ColorPieza.BLANCO);
+        Pieza torre = creador.crear(TipoPieza.TORRE, ColorPieza.BLANCO);
         Posicion posicion = new Posicion(7, 0);
         // act
         tablero.colocarPieza(torre, posicion);
@@ -54,8 +63,8 @@ class TableroTest {
         // arrange
         Tablero tablero = new Tablero(8, 8);
         Posicion posicion = new Posicion(0, 0);
-        Pieza torre = new Pieza(TipoPieza.TORRE, ColorPieza.BLANCO);
-        Pieza caballo = new Pieza(TipoPieza.CABALLO, ColorPieza.NEGRO);
+        Pieza torre = creador.crear(TipoPieza.TORRE, ColorPieza.BLANCO);
+        Pieza caballo = creador.crear(TipoPieza.CABALLO, ColorPieza.NEGRO);
         tablero.colocarPieza(torre, posicion);
         // act y assert
         assertThrows(IllegalStateException.class,() -> tablero.colocarPieza(caballo, posicion));

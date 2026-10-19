@@ -1,7 +1,7 @@
 package ajedrez.dominio.modelo.pieza;
 
 import ajedrez.dominio.reglas.movimiento.MovimientoTorre;
-import ajedrez.dominio.reglas.movimiento.ReglaMovimiento;
+import ajedrez.dominio.reglas.movimiento.IReglaMovimiento;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -10,7 +10,7 @@ class PiezaTest {
     @Test
     void piezaRecibeSuEstrategiaPorConstructor() {
         // arrange
-        ReglaMovimiento estrategia = new MovimientoTorre();
+        IReglaMovimiento estrategia = new MovimientoTorre();
         // act
         Pieza torre = new Pieza(TipoPieza.TORRE, ColorPieza.BLANCO, estrategia);
         // assert
