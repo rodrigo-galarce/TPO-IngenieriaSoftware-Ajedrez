@@ -5,7 +5,7 @@ import ajedrez.dominio.modelo.pieza.Pieza;
 import ajedrez.dominio.modelo.pieza.TipoPieza;
 import ajedrez.dominio.modelo.tablero.Posicion;
 import ajedrez.dominio.modelo.tablero.Tablero;
-
+import ajedrez.dominio.modelo.creacion.CreacionDePiezas;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,13 +15,15 @@ class MovimientoReyTest {
     private Tablero tablero;
     private MovimientoRey movimientoRey;
     private Posicion origen;
+    private CreacionDePiezas creador;
 
     @BeforeEach
     void prepararEscenario() {
         tablero = new Tablero(8, 8);
         movimientoRey = new MovimientoRey();
+        creador = new CreacionDePiezas();
         origen = new Posicion(4, 4);
-        Pieza rey = new Pieza(TipoPieza.REY, ColorPieza.BLANCO, movimientoRey);
+        Pieza rey = creador.crear(TipoPieza.REY, ColorPieza.BLANCO);
         tablero.colocarPieza(rey, origen);
     }
 
@@ -52,7 +54,7 @@ class MovimientoReyTest {
 
     @Test
     void permiteCapturarPiezaEnemiga() {
-        Pieza enemigo = new Pieza(TipoPieza.PEON, ColorPieza.NEGRO);
+        Pieza enemigo = creador.crear(TipoPieza.PEON, ColorPieza.NEGRO);
         Posicion destino = new Posicion(3, 4);
         tablero.colocarPieza(enemigo, destino);
         assertTrue(movimientoRey.esMovimientoValido(tablero, origen, destino, ColorPieza.BLANCO));
@@ -60,7 +62,7 @@ class MovimientoReyTest {
 
     @Test
     void noPermiteCapturarPiezaAliada() {
-        Pieza aliada = new Pieza(TipoPieza.PEON, ColorPieza.BLANCO);
+        Pieza aliada = creador.crear(TipoPieza.PEON, ColorPieza.BLANCO);
         Posicion destino = new Posicion(3, 4);
         tablero.colocarPieza(aliada, destino);
         assertFalse(movimientoRey.esMovimientoValido(tablero, origen, destino, ColorPieza.BLANCO));

@@ -5,7 +5,7 @@ import ajedrez.dominio.modelo.pieza.Pieza;
 import ajedrez.dominio.modelo.pieza.TipoPieza;
 import ajedrez.dominio.modelo.tablero.Posicion;
 import ajedrez.dominio.modelo.tablero.Tablero;
-
+import ajedrez.dominio.modelo.creacion.CreacionDePiezas;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,13 +15,15 @@ class MovimientoCaballoTest {
     private Tablero tablero;
     private MovimientoCaballo movimientoCaballo;
     private Posicion origen;
+    private CreacionDePiezas creador;
 
     @BeforeEach
     void prepararEscenario() {
         tablero = new Tablero(8, 8);
         movimientoCaballo = new MovimientoCaballo();
+        creador = new CreacionDePiezas();
         origen = new Posicion(4, 4);
-        Pieza caballo = new Pieza(TipoPieza.CABALLO, ColorPieza.BLANCO, movimientoCaballo);
+        Pieza caballo = creador.crear(TipoPieza.CABALLO, ColorPieza.BLANCO);
         tablero.colocarPieza(caballo, origen);
     }
 
@@ -45,7 +47,7 @@ class MovimientoCaballoTest {
 
     @Test
     void permiteSaltarSobreOtrasPiezas() {
-        Pieza obstaculo = new Pieza(TipoPieza.PEON, ColorPieza.BLANCO);
+        Pieza obstaculo = creador.crear(TipoPieza.PEON, ColorPieza.BLANCO);
         tablero.colocarPieza(obstaculo, new Posicion(3, 4));
         boolean resultado = movimientoCaballo.esMovimientoValido(tablero, origen, new Posicion(2, 5), ColorPieza.BLANCO);
         assertTrue(resultado);
@@ -53,7 +55,7 @@ class MovimientoCaballoTest {
 
     @Test
     void permiteCapturarPiezaEnemiga() {
-        Pieza enemigo = new Pieza(TipoPieza.PEON, ColorPieza.NEGRO);
+        Pieza enemigo = creador.crear(TipoPieza.PEON, ColorPieza.NEGRO);
         Posicion destino = new Posicion(2, 5);
         tablero.colocarPieza(enemigo, destino);
         assertTrue(movimientoCaballo.esMovimientoValido(tablero, origen, destino, ColorPieza.BLANCO));
@@ -61,7 +63,7 @@ class MovimientoCaballoTest {
 
     @Test
     void noPermiteCapturarPiezaAliada() {
-        Pieza aliada = new Pieza(TipoPieza.PEON, ColorPieza.BLANCO);
+        Pieza aliada = creador.crear(TipoPieza.PEON, ColorPieza.BLANCO);
         Posicion destino = new Posicion(2, 5);
         tablero.colocarPieza(aliada, destino);
         assertFalse(movimientoCaballo.esMovimientoValido(tablero, origen, destino, ColorPieza.BLANCO));
@@ -69,7 +71,7 @@ class MovimientoCaballoTest {
 
     @Test
     void detectaCasillaAmenazadaConAliada() {
-        Pieza aliada = new Pieza(TipoPieza.PEON, ColorPieza.BLANCO);
+        Pieza aliada = creador.crear(TipoPieza.PEON, ColorPieza.BLANCO);
         Posicion destino = new Posicion(2, 5);
         tablero.colocarPieza(aliada, destino);
         assertTrue(movimientoCaballo.amenaza(tablero, origen, destino, ColorPieza.BLANCO));

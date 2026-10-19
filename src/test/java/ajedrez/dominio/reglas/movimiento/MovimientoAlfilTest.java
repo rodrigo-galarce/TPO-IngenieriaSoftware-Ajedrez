@@ -5,7 +5,7 @@ import ajedrez.dominio.modelo.pieza.Pieza;
 import ajedrez.dominio.modelo.pieza.TipoPieza;
 import ajedrez.dominio.modelo.tablero.Posicion;
 import ajedrez.dominio.modelo.tablero.Tablero;
-
+import ajedrez.dominio.modelo.creacion.CreacionDePiezas;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,13 +15,15 @@ class MovimientoAlfilTest {
     private Tablero tablero;
     private MovimientoAlfil movimientoAlfil;
     private Posicion origen;
+    private CreacionDePiezas creador;
 
     @BeforeEach
     void prepararEscenario() {
         tablero = new Tablero(8, 8);
         movimientoAlfil = new MovimientoAlfil();
+        creador = new CreacionDePiezas();
         origen = new Posicion(3, 3);
-        Pieza alfil = new Pieza(TipoPieza.ALFIL, ColorPieza.BLANCO, movimientoAlfil        );
+        Pieza alfil = creador.crear(TipoPieza.ALFIL, ColorPieza.BLANCO);
         tablero.colocarPieza(alfil, origen);
     }
 
@@ -51,7 +53,7 @@ class MovimientoAlfilTest {
 
     @Test
     void noPermiteAtravesarPiezas() {
-        Pieza obstaculo = new Pieza(TipoPieza.PEON, ColorPieza.NEGRO);
+        Pieza obstaculo = creador.crear(TipoPieza.PEON, ColorPieza.NEGRO);
         tablero.colocarPieza(obstaculo, new Posicion(4, 4));
         boolean resultado = movimientoAlfil.esMovimientoValido(tablero, origen, new Posicion(6, 6), ColorPieza.BLANCO);
         assertFalse(resultado);
@@ -59,7 +61,7 @@ class MovimientoAlfilTest {
 
     @Test
     void permiteCapturarPiezaEnemiga() {
-        Pieza enemigo = new Pieza(TipoPieza.TORRE, ColorPieza.NEGRO);
+        Pieza enemigo = creador.crear(TipoPieza.TORRE, ColorPieza.NEGRO);
         Posicion destino = new Posicion(5, 5);
         tablero.colocarPieza(enemigo, destino);
         assertTrue(movimientoAlfil.esMovimientoValido(tablero, origen, destino, ColorPieza.BLANCO));
@@ -67,7 +69,7 @@ class MovimientoAlfilTest {
 
     @Test
     void noPermiteCapturarPiezaAliada() {
-        Pieza aliada = new Pieza(TipoPieza.PEON, ColorPieza.BLANCO);
+        Pieza aliada = creador.crear(TipoPieza.PEON, ColorPieza.BLANCO);
         Posicion destino = new Posicion(5, 5);
         tablero.colocarPieza(aliada, destino);
         assertFalse(movimientoAlfil.esMovimientoValido(tablero, origen, destino, ColorPieza.BLANCO));
