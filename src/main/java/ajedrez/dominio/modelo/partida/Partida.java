@@ -4,15 +4,21 @@ import ajedrez.dominio.modelo.pieza.ColorPieza;
 import ajedrez.dominio.modelo.pieza.Pieza;
 import ajedrez.dominio.modelo.tablero.Posicion;
 import ajedrez.dominio.modelo.tablero.Tablero;
-
+import ajedrez.dominio.reglas.jaque.DetectorJaque;
 import java.util.Objects;
 
 public class Partida {
     private final Tablero tablero;
     private ColorPieza turnoActual;
+    private final DetectorJaque detectorJaque;
 
     public Partida(Tablero tablero) {
+        this(tablero, new DetectorJaque());
+    }
+
+    public Partida(Tablero tablero, DetectorJaque detectorJaque) {
         this.tablero = Objects.requireNonNull(tablero);
+        this.detectorJaque = Objects.requireNonNull(detectorJaque);
         this.turnoActual = ColorPieza.BLANCO;
     }
 
@@ -41,5 +47,9 @@ public class Partida {
         }
         tablero.moverPieza(origen, destino);
         turnoActual = (turnoActual == ColorPieza.BLANCO) ? ColorPieza.NEGRO : ColorPieza.BLANCO;
+    }
+
+    public boolean estaEnJaque(ColorPieza color) {
+        return detectorJaque.estaEnJaque(tablero, color);
     }
 }

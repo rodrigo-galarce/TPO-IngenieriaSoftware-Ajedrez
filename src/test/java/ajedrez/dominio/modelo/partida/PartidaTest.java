@@ -150,4 +150,27 @@ class PartidaTest {
         assertEquals(TipoPieza.PEON, partida.getTablero().obtenerPieza(new Posicion(6, 0)).getTipo()
         );
     }
+
+    @Test
+    void partidaDetectaJaqueAlReyBlanco() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(7, 4));
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(0, 0));
+        tablero.colocarPieza(creador.crear(TipoPieza.TORRE, ColorPieza.NEGRO), new Posicion(0, 4));
+        Partida partida = new Partida(tablero);
+        assertTrue(partida.estaEnJaque(ColorPieza.BLANCO));
+        assertFalse(partida.estaEnJaque(ColorPieza.NEGRO));
+    }
+
+    @Test
+    void partidaNoDetectaJaqueSiHayObstaculo() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(7, 4));
+        tablero.colocarPieza(creador.crear(TipoPieza.TORRE, ColorPieza.NEGRO), new Posicion(0, 4));
+        tablero.colocarPieza(creador.crear(TipoPieza.PEON, ColorPieza.BLANCO), new Posicion(4, 4));
+        Partida partida = new Partida(tablero);
+        assertFalse(partida.estaEnJaque(ColorPieza.BLANCO));
+    }
 }
