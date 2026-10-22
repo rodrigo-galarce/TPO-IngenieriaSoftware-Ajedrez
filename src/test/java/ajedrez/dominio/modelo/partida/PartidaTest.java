@@ -6,7 +6,7 @@ import ajedrez.dominio.modelo.creacion.CreacionDePiezas;
 import ajedrez.dominio.modelo.pieza.Pieza;
 import ajedrez.dominio.modelo.pieza.TipoPieza;
 import ajedrez.dominio.modelo.tablero.Posicion;
-
+import ajedrez.dominio.modelo.creacion.ConfiguracionInicial;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -132,5 +132,22 @@ class PartidaTest {
         assertThrows(IllegalArgumentException.class, () -> partida.moverPieza(origen, destino));
         assertSame(peon, tablero.obtenerPieza(origen));
         assertEquals(ColorPieza.BLANCO, partida.getTurnoActual());
+    }
+
+    @Test
+    void iniciaPartidaConPiezasEnPosicionInicial() {
+        // arrange
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        ConfiguracionInicial configuracion = new ConfiguracionInicial(creador);
+        configuracion.colocarPiezas(tablero);
+        // act
+        Partida partida = new Partida(tablero);
+        // assert
+        assertEquals(ColorPieza.BLANCO, partida.getTurnoActual());
+        assertEquals(TipoPieza.REY, partida.getTablero().obtenerPieza(new Posicion(7, 4)).getTipo());
+        assertEquals(TipoPieza.REY, partida.getTablero().obtenerPieza(new Posicion(0, 4)).getTipo());
+        assertEquals(TipoPieza.PEON, partida.getTablero().obtenerPieza(new Posicion(6, 0)).getTipo()
+        );
     }
 }
