@@ -5,10 +5,11 @@ import ajedrez.dominio.modelo.pieza.Pieza;
 import ajedrez.dominio.modelo.pieza.TipoPieza;
 import ajedrez.dominio.modelo.tablero.Posicion;
 import ajedrez.dominio.modelo.tablero.Tablero;
+import ajedrez.dominio.puertos.IPartida;
 import ajedrez.dominio.reglas.jaque.DetectorJaque;
 import java.util.Objects;
 
-public class Partida {
+public class Partida implements IPartida {
     private final Tablero tablero;
     private ColorPieza turnoActual;
     private final DetectorJaque detectorJaque;
@@ -31,14 +32,17 @@ public class Partida {
         this.ganador = null;
     }
 
+    @Override
     public Tablero getTablero() {
         return tablero;
     }
 
+    @Override
     public ColorPieza getTurnoActual() {
         return turnoActual;
     }
 
+    @Override
     public void moverPieza(Posicion origen, Posicion destino) {
         if (estaFinalizada()) {
             throw new IllegalStateException("La partida ya finalizo");
@@ -69,22 +73,27 @@ public class Partida {
         }
     }
 
+    @Override
     public boolean estaEnJaque(ColorPieza color) {
         return detectorJaque.estaEnJaque(tablero, color);
     }
 
+    @Override
     public int getSegundosRestantes(ColorPieza color) {
         return reloj.getSegundosRestantes(color);
     }
 
+    @Override
     public boolean estaFinalizada() {
         return ganador != null;
     }
 
+    @Override
     public ColorPieza getGanador() {
         return ganador;
     }
 
+    @Override
     public void avanzarUnSegundo() {
         if (estaFinalizada()) {
             return;

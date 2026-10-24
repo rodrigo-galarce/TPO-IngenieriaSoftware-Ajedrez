@@ -1,6 +1,6 @@
 package ajedrez.adaptadores.swing;
 
-import ajedrez.dominio.modelo.partida.Partida;
+import ajedrez.dominio.puertos.IPartida;
 import ajedrez.dominio.modelo.pieza.ColorPieza;
 import ajedrez.dominio.modelo.pieza.Pieza;
 import ajedrez.dominio.modelo.tablero.Posicion;
@@ -12,7 +12,7 @@ import java.awt.event.MouseEvent;
 
 public class VentanaAjedrez {
     private final JFrame ventana;
-    private final Partida partida;
+    private final IPartida partida;
     private final JLabel[][] casillas;
     private Posicion piezaSeleccionada;
     private final JLabel etiquetaEstado;
@@ -20,7 +20,7 @@ public class VentanaAjedrez {
     private final JLabel relojNegras;
     private final Timer temporizador;
 
-    public VentanaAjedrez(Partida partida) {
+    public VentanaAjedrez(IPartida partida) {
         this.partida = Objects.requireNonNull(partida);
         casillas = new JLabel[8][8];
         piezaSeleccionada = null;
