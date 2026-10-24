@@ -2,7 +2,6 @@ package ajedrez.dominio.modelo.creacion;
 
 import ajedrez.dominio.modelo.pieza.*;
 import ajedrez.dominio.reglas.movimiento.*;
-
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;

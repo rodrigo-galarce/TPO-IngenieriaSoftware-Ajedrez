@@ -4,7 +4,6 @@ import ajedrez.dominio.modelo.pieza.Pieza;
 import ajedrez.dominio.modelo.pieza.TipoPieza;
 import ajedrez.dominio.modelo.pieza.ColorPieza;
 import ajedrez.dominio.modelo.creacion.CreacionDePiezas;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -69,7 +68,6 @@ class TableroTest {
         // act y assert
         assertThrows(IllegalStateException.class,() -> tablero.colocarPieza(caballo, posicion));
     }
-
 
     @Test
     void muevePiezaACasillaVacia() {

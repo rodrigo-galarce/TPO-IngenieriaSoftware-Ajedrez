@@ -5,9 +5,7 @@ import ajedrez.dominio.modelo.pieza.ColorPieza;
 import ajedrez.dominio.modelo.pieza.TipoPieza;
 import ajedrez.dominio.modelo.tablero.Posicion;
 import ajedrez.dominio.modelo.tablero.Tablero;
-
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class DetectorJaqueTest {
@@ -82,9 +80,4 @@ class DetectorJaqueTest {
         tablero.colocarPieza(creador.crear(TipoPieza.REINA, ColorPieza.NEGRO), new Posicion(4, 2));
         assertTrue(detector.estaEnJaque(tablero, ColorPieza.BLANCO));
     }
-
-
-
-
-
 }

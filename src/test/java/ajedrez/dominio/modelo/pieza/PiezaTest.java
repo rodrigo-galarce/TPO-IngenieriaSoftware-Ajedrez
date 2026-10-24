@@ -2,7 +2,6 @@ package ajedrez.dominio.modelo.pieza;
 
 import ajedrez.dominio.reglas.movimiento.MovimientoTorre;
 import ajedrez.dominio.reglas.movimiento.IReglaMovimiento;
-
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

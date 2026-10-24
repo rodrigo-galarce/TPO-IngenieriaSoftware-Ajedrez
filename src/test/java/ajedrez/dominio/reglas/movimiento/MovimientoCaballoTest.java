@@ -8,7 +8,6 @@ import ajedrez.dominio.modelo.tablero.Tablero;
 import ajedrez.dominio.modelo.creacion.CreacionDePiezas;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class MovimientoCaballoTest {

@@ -2,9 +2,7 @@ package ajedrez.dominio.modelo.creacion;
 
 import ajedrez.dominio.modelo.pieza.*;
 import ajedrez.dominio.reglas.movimiento.*;
-
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class CreacionDePiezasTest {

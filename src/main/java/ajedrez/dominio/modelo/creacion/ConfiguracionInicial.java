@@ -4,7 +4,6 @@ import ajedrez.dominio.modelo.pieza.ColorPieza;
 import ajedrez.dominio.modelo.pieza.TipoPieza;
 import ajedrez.dominio.modelo.tablero.Posicion;
 import ajedrez.dominio.modelo.tablero.Tablero;
-
 import java.util.Objects;
 
 public class ConfiguracionInicial {

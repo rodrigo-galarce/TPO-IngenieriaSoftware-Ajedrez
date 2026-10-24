@@ -9,7 +9,6 @@ import ajedrez.dominio.modelo.tablero.Posicion;
 import ajedrez.dominio.modelo.creacion.ConfiguracionInicial;
 import ajedrez.dominio.reglas.jaque.DetectorJaque;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class PartidaTest {

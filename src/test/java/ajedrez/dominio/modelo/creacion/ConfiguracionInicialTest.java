@@ -5,9 +5,7 @@ import ajedrez.dominio.modelo.pieza.Pieza;
 import ajedrez.dominio.modelo.pieza.TipoPieza;
 import ajedrez.dominio.modelo.tablero.Posicion;
 import ajedrez.dominio.modelo.tablero.Tablero;
-
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class ConfiguracionInicialTest {

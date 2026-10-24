@@ -1,4 +1,3 @@
-
 package ajedrez.dominio.reglas.movimiento;
 
 import ajedrez.dominio.modelo.pieza.ColorPieza;
