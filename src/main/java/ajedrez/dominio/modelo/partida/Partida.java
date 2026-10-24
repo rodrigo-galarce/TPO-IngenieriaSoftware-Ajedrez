@@ -32,9 +32,13 @@ public class Partida implements IPartida {
         this.ganador = null;
     }
 
-    @Override
     public Tablero getTablero() {
         return tablero;
+    }
+
+    @Override
+    public Pieza obtenerPieza(Posicion posicion) {
+        return tablero.obtenerPieza(posicion);
     }
 
     @Override

@@ -1,11 +1,11 @@
 package ajedrez.dominio.puertos;
 
 import ajedrez.dominio.modelo.pieza.ColorPieza;
+import ajedrez.dominio.modelo.pieza.Pieza;
 import ajedrez.dominio.modelo.tablero.Posicion;
-import ajedrez.dominio.modelo.tablero.Tablero;
 
 public interface IPartida {
-    Tablero getTablero();
+    Pieza obtenerPieza(Posicion posicion);;
 
     ColorPieza getTurnoActual();
 

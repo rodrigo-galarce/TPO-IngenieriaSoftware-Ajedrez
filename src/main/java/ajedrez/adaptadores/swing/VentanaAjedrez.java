@@ -47,7 +47,7 @@ public class VentanaAjedrez {
                     casilla.setBackground(colorOscuro);
                 }
 
-                Pieza pieza = partida.getTablero().obtenerPieza(new Posicion(fila, columna));
+                Pieza pieza = partida.obtenerPieza(new Posicion(fila, columna));
                 casilla.setText(obtenerSimbolo(pieza));
                 casillas[fila][columna] = casilla;
                 // se guardan las coordenadas de la casilla
@@ -139,7 +139,7 @@ public class VentanaAjedrez {
         if (partida.estaFinalizada()) {
             return;
         }
-        Pieza pieza = partida.getTablero().obtenerPieza(posicion);
+        Pieza pieza = partida.obtenerPieza(posicion);
         // 1er clic - selecciona una pieza propia
         if (piezaSeleccionada == null) {
             if (pieza == null) {
@@ -201,7 +201,7 @@ public class VentanaAjedrez {
         for (int fila = 0; fila < 8; fila++) {
             for (int columna = 0; columna < 8; columna++) {
                 Posicion posicion = new Posicion(fila, columna);
-                Pieza pieza = partida.getTablero().obtenerPieza(posicion);
+                Pieza pieza = partida.obtenerPieza(posicion);
                 casillas[fila][columna].setText(obtenerSimbolo(pieza));
             }
         }
