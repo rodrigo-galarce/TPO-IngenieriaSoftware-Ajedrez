@@ -5,11 +5,9 @@ import ajedrez.dominio.modelo.creacion.ConfiguracionInicial;
 import ajedrez.dominio.modelo.creacion.CreacionDePiezas;
 import ajedrez.dominio.modelo.partida.Partida;
 import ajedrez.dominio.modelo.tablero.Tablero;
-
 import javax.swing.SwingUtilities;
 
 public class App {
-
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             Tablero tablero = new Tablero(8, 8);

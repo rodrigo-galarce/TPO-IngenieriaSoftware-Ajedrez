@@ -7,6 +7,7 @@ import ajedrez.dominio.modelo.pieza.Pieza;
 import ajedrez.dominio.modelo.pieza.TipoPieza;
 import ajedrez.dominio.modelo.tablero.Posicion;
 import ajedrez.dominio.modelo.creacion.ConfiguracionInicial;
+import ajedrez.dominio.reglas.jaque.DetectorJaque;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -172,5 +173,59 @@ class PartidaTest {
         tablero.colocarPieza(creador.crear(TipoPieza.PEON, ColorPieza.BLANCO), new Posicion(4, 4));
         Partida partida = new Partida(tablero);
         assertFalse(partida.estaEnJaque(ColorPieza.BLANCO));
+    }
+
+    @Test
+    void descuentaTiempoDelJugadorActual() {
+        Tablero tablero = new Tablero(8, 8);
+        Partida partida = new Partida(tablero);
+        partida.avanzarUnSegundo();
+        assertEquals(179, partida.getSegundosRestantes(ColorPieza.BLANCO));
+        assertEquals(180, partida.getSegundosRestantes(ColorPieza.NEGRO));
+    }
+
+    @Test
+    void descuentaTiempoDelNuevoTurno() {
+        Tablero tablero = new Tablero(8, 8);
+        Partida partida = new Partida(tablero);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        Posicion origen = new Posicion(6, 0);
+        Posicion destino = new Posicion(5, 0);
+
+        tablero.colocarPieza(creador.crear(TipoPieza.PEON, ColorPieza.BLANCO), origen);
+        partida.moverPieza(origen, destino);
+        partida.avanzarUnSegundo();
+        assertEquals(180, partida.getSegundosRestantes(ColorPieza.BLANCO));
+        assertEquals(179, partida.getSegundosRestantes(ColorPieza.NEGRO));
+    }
+
+    @Test
+    void finalizaPartidaCuandoSeAgotaElTiempo() {
+        Tablero tablero = new Tablero(8, 8);
+        Partida partida = new Partida(tablero, new DetectorJaque(), new RelojPartida(2));
+        partida.avanzarUnSegundo();
+        assertFalse(partida.estaFinalizada());
+        partida.avanzarUnSegundo();
+        assertTrue(partida.estaFinalizada());
+        assertEquals(ColorPieza.NEGRO, partida.getGanador());
+        assertEquals(0, partida.getSegundosRestantes(ColorPieza.BLANCO));
+        assertThrows(IllegalStateException.class, () -> partida.moverPieza(new Posicion(6, 0), new Posicion(5, 0)));
+    }
+
+    @Test
+    void noPermiteCapturarAlReyEnemigo() {
+        Tablero tablero = new Tablero(8, 8);
+        Partida partida = new Partida(tablero);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        Posicion origen = new Posicion(4, 4);
+        Posicion destino = new Posicion(4, 6);
+        Pieza torreBlanca = creador.crear(TipoPieza.TORRE, ColorPieza.BLANCO);
+        Pieza reyNegro = creador.crear(TipoPieza.REY, ColorPieza.NEGRO);
+        tablero.colocarPieza(torreBlanca, origen);
+        tablero.colocarPieza(reyNegro, destino);
+        assertThrows(IllegalArgumentException.class, () -> partida.moverPieza(origen, destino));
+        assertSame(torreBlanca, tablero.obtenerPieza(origen));
+        assertSame(reyNegro, tablero.obtenerPieza(destino));
+        assertEquals(ColorPieza.BLANCO, partida.getTurnoActual());
     }
 }

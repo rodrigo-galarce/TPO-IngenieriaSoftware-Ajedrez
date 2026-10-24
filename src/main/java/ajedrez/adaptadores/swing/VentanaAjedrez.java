@@ -16,6 +16,9 @@ public class VentanaAjedrez {
     private final JLabel[][] casillas;
     private Posicion piezaSeleccionada;
     private final JLabel etiquetaEstado;
+    private final JLabel relojBlancas;
+    private final JLabel relojNegras;
+    private final Timer temporizador;
 
     public VentanaAjedrez(Partida partida) {
         this.partida = Objects.requireNonNull(partida);
@@ -60,12 +63,43 @@ public class VentanaAjedrez {
                 panelTablero.add(casilla);
             }
         }
-        ventana.add(panelTablero);
+        ventana.add(panelTablero, BorderLayout.CENTER);
+        // se crean los dos relojes
+        relojBlancas = new JLabel();
+        relojNegras = new JLabel();
+        relojBlancas.setHorizontalAlignment(SwingConstants.CENTER);
+        relojNegras.setHorizontalAlignment(SwingConstants.CENTER);
+        Font fuenteReloj = new Font("Arial", Font.BOLD, 22);
+        relojBlancas.setFont(fuenteReloj);
+        relojNegras.setFont(fuenteReloj);
+
+        // panel para poner los relojes uno al lado del otro
+        JPanel panelRelojes = new JPanel(new GridLayout(1, 2));
+        panelRelojes.add(relojBlancas);
+        panelRelojes.add(relojNegras);
+
+        // etiqueta para el turno y el jaque
         etiquetaEstado = new JLabel();
         etiquetaEstado.setHorizontalAlignment(SwingConstants.CENTER);
         etiquetaEstado.setFont(new Font("Arial", Font.BOLD, 16));
         etiquetaEstado.setPreferredSize(new Dimension(560, 40));
-        ventana.add(etiquetaEstado, BorderLayout.SOUTH);
+
+        // panel inferior con relojes y estado
+        JPanel panelInferior = new JPanel(new BorderLayout());
+        panelInferior.add(panelRelojes, BorderLayout.NORTH);
+        panelInferior.add(etiquetaEstado, BorderLayout.SOUTH);
+        ventana.add(panelInferior, BorderLayout.SOUTH);
+
+        // cada segundo le avisamos a Partida que transcurrio tiempo
+        temporizador = new Timer(1000, e -> {
+            partida.avanzarUnSegundo();
+            actualizarRelojes();
+            actualizarEstado();
+            if (partida.estaFinalizada()) {
+                ((Timer) e.getSource()).stop();;
+            }
+        });
+        actualizarRelojes();
         actualizarEstado();
         ventana.pack();
         ventana.setLocationRelativeTo(null);
@@ -98,9 +132,13 @@ public class VentanaAjedrez {
 
     public void mostrar() {
         ventana.setVisible(true);
+        temporizador.start();
     }
 
     private void seleccionarCasilla(Posicion posicion) {
+        if (partida.estaFinalizada()) {
+            return;
+        }
         Pieza pieza = partida.getTablero().obtenerPieza(posicion);
         // 1er clic - selecciona una pieza propia
         if (piezaSeleccionada == null) {
@@ -171,11 +209,28 @@ public class VentanaAjedrez {
     }
 
     private void actualizarEstado() {
+        if (partida.estaFinalizada()) {
+            etiquetaEstado.setText("Partida finalizada. Ganador: " + partida.getGanador());
+            return;
+        }
         ColorPieza turno = partida.getTurnoActual();
         if (partida.estaEnJaque(turno)) {
             etiquetaEstado.setText("Turno: " + turno + " - JAQUE");
         } else {
             etiquetaEstado.setText("Turno: " + turno);
         }
+    }
+
+    private void actualizarRelojes() {
+        int segundosBlancas = partida.getSegundosRestantes(ColorPieza.BLANCO);
+        int segundosNegras = partida.getSegundosRestantes(ColorPieza.NEGRO);
+        relojBlancas.setText("Blancas: " + formatearTiempo(segundosBlancas));
+        relojNegras.setText("Negras: " + formatearTiempo(segundosNegras));
+    }
+
+    private String formatearTiempo(int segundosTotales) {
+        int minutos = segundosTotales / 60;
+        int segundos = segundosTotales % 60;
+        return String.format("%02d:%02d", minutos, segundos);
     }
 }
