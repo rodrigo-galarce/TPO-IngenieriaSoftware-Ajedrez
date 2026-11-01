@@ -12,6 +12,13 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PartidaTest {
+
+    private void colocarReyes(Tablero tablero) {
+        CreacionDePiezas creador = new CreacionDePiezas();
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(7, 4));
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(0, 4));
+    }
+
     @Test
     void comienzaConTurnoBlanco() {
         Tablero tablero = new Tablero(8, 8);
@@ -34,6 +41,7 @@ class PartidaTest {
     @Test
     void movimientoValidoCambiaElTurno() {
         Tablero tablero = new Tablero(8, 8);
+        colocarReyes(tablero);
         Partida partida = new Partida(tablero);
         CreacionDePiezas creador = new CreacionDePiezas();
         Posicion origen = new Posicion(6, 0);
@@ -80,6 +88,7 @@ class PartidaTest {
     void alternaTurnosEntreBlancasYNegras() {
         // arrange
         Tablero tablero = new Tablero(8, 8);
+        colocarReyes(tablero);
         Partida partida = new Partida(tablero);
         CreacionDePiezas creador = new CreacionDePiezas();
         Pieza peonBlanco = creador.crear(TipoPieza.PEON, ColorPieza.BLANCO);
@@ -186,6 +195,7 @@ class PartidaTest {
     @Test
     void descuentaTiempoDelNuevoTurno() {
         Tablero tablero = new Tablero(8, 8);
+        colocarReyes(tablero);
         Partida partida = new Partida(tablero);
         CreacionDePiezas creador = new CreacionDePiezas();
         Posicion origen = new Posicion(6, 0);
@@ -225,6 +235,41 @@ class PartidaTest {
         assertThrows(IllegalArgumentException.class, () -> partida.moverPieza(origen, destino));
         assertSame(torreBlanca, tablero.obtenerPieza(origen));
         assertSame(reyNegro, tablero.obtenerPieza(destino));
+        assertEquals(ColorPieza.BLANCO, partida.getTurnoActual());
+    }
+
+    @Test
+    void reyNoPuedeMoverseACasillaAmenazada() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        Partida partida = new Partida(tablero);
+        Posicion origen = new Posicion(7, 3);
+        Posicion destino = new Posicion(7, 4);
+        Pieza reyBlanco = creador.crear(TipoPieza.REY, ColorPieza.BLANCO);
+        tablero.colocarPieza(reyBlanco, origen);
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(0, 0));
+        tablero.colocarPieza(creador.crear(TipoPieza.TORRE, ColorPieza.NEGRO), new Posicion(0, 4));
+        assertThrows(IllegalArgumentException.class, () -> partida.moverPieza(origen, destino));
+        assertSame(reyBlanco, tablero.obtenerPieza(origen));
+        assertNull(tablero.obtenerPieza(destino));
+        assertEquals(ColorPieza.BLANCO, partida.getTurnoActual());
+    }
+
+    @Test
+    void noPermiteMoverPiezaQueDejaAlReyEnJaque() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        Partida partida = new Partida(tablero);
+        Posicion origen = new Posicion(4, 4);
+        Posicion destino = new Posicion(4, 5);
+        Pieza torreBlanca = creador.crear(TipoPieza.TORRE, ColorPieza.BLANCO);
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(7, 4));
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(0, 0));
+        tablero.colocarPieza(creador.crear(TipoPieza.TORRE, ColorPieza.NEGRO), new Posicion(0, 4));
+        tablero.colocarPieza(torreBlanca, origen);
+        assertThrows(IllegalArgumentException.class, () -> partida.moverPieza(origen, destino));
+        assertSame(torreBlanca, tablero.obtenerPieza(origen));
+        assertNull(tablero.obtenerPieza(destino));
         assertEquals(ColorPieza.BLANCO, partida.getTurnoActual());
     }
 }

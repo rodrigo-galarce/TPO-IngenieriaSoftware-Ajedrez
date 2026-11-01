@@ -139,4 +139,19 @@ class TableroTest {
         assertThrows(IllegalArgumentException.class, () -> tablero.moverPieza(origen, origen));
         assertSame(rey, tablero.obtenerPieza(origen));
     }
+
+    @Test
+    void copiarTableroPermiteMoverSinModificarOriginal() {
+        Tablero tablero = new Tablero(8, 8);
+        Pieza torre = creador.crear(TipoPieza.TORRE, ColorPieza.BLANCO);
+        Posicion origen = new Posicion(4, 4);
+        Posicion destino = new Posicion(4, 5);
+        tablero.colocarPieza(torre, origen);
+        Tablero copia = tablero.copiar();
+        copia.moverPieza(origen, destino);
+        assertSame(torre, tablero.obtenerPieza(origen));
+        assertNull(tablero.obtenerPieza(destino));
+        assertNull(copia.obtenerPieza(origen));
+        assertSame(torre, copia.obtenerPieza(destino));
+    }
 }

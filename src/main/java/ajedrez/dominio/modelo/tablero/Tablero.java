@@ -71,4 +71,18 @@ public class Tablero {
         casillas[destino.fila()][destino.columna()] = pieza;
         casillas[origen.fila()][origen.columna()] = null;
     }
+
+    public Tablero copiar() {
+        Tablero copia = new Tablero(filas, columnas);
+        for (int fila = 0; fila < filas; fila++) {
+            for (int columna = 0; columna < columnas; columna++) {
+                Posicion posicion = new Posicion(fila, columna);
+                Pieza pieza = obtenerPieza(posicion);
+                if (pieza != null) {
+                    copia.colocarPieza(pieza, posicion);
+                }
+            }
+        }
+        return copia;
+    }
 }

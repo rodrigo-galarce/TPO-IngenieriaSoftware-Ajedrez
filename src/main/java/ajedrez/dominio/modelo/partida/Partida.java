@@ -69,6 +69,13 @@ public class Partida implements IPartida {
         if (!movimientoValido) {
             throw new IllegalArgumentException("El movimiento no es valido");
         }
+        // se prueba el movimiento sin modificar el tablero real
+        Tablero tableroPrueba = tablero.copiar();
+        tableroPrueba.moverPieza(origen, destino);
+        // se comprueba si el rey queda amenazado
+        if (detectorJaque.estaEnJaque(tableroPrueba, pieza.getColor())) {
+            throw new IllegalArgumentException("El movimiento deja a tu rey en jaque");
+        }
         tablero.moverPieza(origen, destino);
         if (turnoActual == ColorPieza.BLANCO) {
             turnoActual = ColorPieza.NEGRO;
