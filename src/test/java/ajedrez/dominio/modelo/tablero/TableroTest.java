@@ -154,4 +154,27 @@ class TableroTest {
         assertNull(copia.obtenerPieza(origen));
         assertSame(torre, copia.obtenerPieza(destino));
     }
+
+    @Test
+    void reemplazarPiezaConservaPosicionYColor() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        Posicion posicion = new Posicion(0, 0);
+        Pieza peon = creador.crear(TipoPieza.PEON, ColorPieza.BLANCO);
+        Pieza reina = creador.crear(TipoPieza.REINA, ColorPieza.BLANCO);
+        tablero.colocarPieza(peon, posicion);
+        tablero.reemplazarPieza(reina, posicion);
+        assertSame(reina, tablero.obtenerPieza(posicion));
+        assertEquals(TipoPieza.REINA, tablero.obtenerPieza(posicion).getTipo());
+        assertEquals(ColorPieza.BLANCO, tablero.obtenerPieza(posicion).getColor());
+    }
+
+    @Test
+    void noPermiteReemplazarUnaCasillaVacia() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        Pieza reina = creador.crear(TipoPieza.REINA, ColorPieza.BLANCO);
+        Posicion posicion = new Posicion(0, 0);
+        assertThrows(IllegalStateException.class, () -> tablero.reemplazarPieza(reina, posicion));
+    }
 }

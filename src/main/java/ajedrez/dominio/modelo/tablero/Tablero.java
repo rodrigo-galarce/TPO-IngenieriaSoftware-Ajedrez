@@ -47,6 +47,19 @@ public class Tablero {
         casillas[posicion.fila()][posicion.columna()] = pieza;
     }
 
+    public void reemplazarPieza(Pieza nuevaPieza, Posicion posicion) {
+        Objects.requireNonNull(nuevaPieza, "La pieza no puede ser null");
+        validarPosicion(posicion);
+        Pieza piezaActual = obtenerPieza(posicion);
+        if (piezaActual == null) {
+            throw new IllegalStateException("No hay una pieza para reemplazar");
+        }
+        if (piezaActual.getColor() != nuevaPieza.getColor()) {
+            throw new IllegalArgumentException("La nueva pieza debe conservar el color");
+        }
+        casillas[posicion.fila()][posicion.columna()] = nuevaPieza;
+    }
+
     private void validarPosicion(Posicion posicion) {
         if (!estaDentro(posicion)) {
             throw new IllegalArgumentException("Error. La posición está fuera del tablero");

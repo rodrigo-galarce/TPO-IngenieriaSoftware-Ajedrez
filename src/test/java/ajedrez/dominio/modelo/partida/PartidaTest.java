@@ -188,8 +188,8 @@ class PartidaTest {
         Tablero tablero = new Tablero(8, 8);
         Partida partida = new Partida(tablero);
         partida.avanzarUnSegundo();
-        assertEquals(179, partida.getSegundosRestantes(ColorPieza.BLANCO));
-        assertEquals(180, partida.getSegundosRestantes(ColorPieza.NEGRO));
+        assertEquals(599, partida.getSegundosRestantes(ColorPieza.BLANCO));
+        assertEquals(600, partida.getSegundosRestantes(ColorPieza.NEGRO));
     }
 
     @Test
@@ -204,8 +204,8 @@ class PartidaTest {
         tablero.colocarPieza(creador.crear(TipoPieza.PEON, ColorPieza.BLANCO), origen);
         partida.moverPieza(origen, destino);
         partida.avanzarUnSegundo();
-        assertEquals(180, partida.getSegundosRestantes(ColorPieza.BLANCO));
-        assertEquals(179, partida.getSegundosRestantes(ColorPieza.NEGRO));
+        assertEquals(600, partida.getSegundosRestantes(ColorPieza.BLANCO));
+        assertEquals(599, partida.getSegundosRestantes(ColorPieza.NEGRO));
     }
 
     @Test
@@ -271,5 +271,151 @@ class PartidaTest {
         assertSame(torreBlanca, tablero.obtenerPieza(origen));
         assertNull(tablero.obtenerPieza(destino));
         assertEquals(ColorPieza.BLANCO, partida.getTurnoActual());
+    }
+
+    @Test
+    void detectaJaqueMate() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(7, 7));
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(5, 5));
+        tablero.colocarPieza(creador.crear(TipoPieza.REINA, ColorPieza.NEGRO), new Posicion(6, 6));
+        Partida partida = new Partida(tablero);
+        assertTrue(partida.estaEnJaqueMate(ColorPieza.BLANCO));
+    }
+
+    @Test
+    void estarEnJaqueNoSiempreEsJaqueMate() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(7, 7));
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(0, 0));
+        tablero.colocarPieza(creador.crear(TipoPieza.TORRE, ColorPieza.NEGRO), new Posicion(0, 7));
+        Partida partida = new Partida(tablero);
+        assertTrue(partida.estaEnJaque(ColorPieza.BLANCO));
+        assertFalse(partida.estaEnJaqueMate(ColorPieza.BLANCO));
+    }
+
+    @Test
+    void finalizaPartidaCuandoHayJaqueMate() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(2, 5));
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(0, 7));
+        tablero.colocarPieza(creador.crear(TipoPieza.REINA, ColorPieza.BLANCO), new Posicion(2, 6));
+        Partida partida = new Partida(tablero);
+        partida.moverPieza(new Posicion(2, 6), new Posicion(1, 6));
+        assertTrue(partida.estaFinalizada());
+        assertEquals(ColorPieza.BLANCO, partida.getGanador());
+        assertTrue(partida.estaEnJaqueMate(ColorPieza.NEGRO));
+    }
+
+    @Test
+    void detectaAhogado() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(7, 7));
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(6, 5));
+        tablero.colocarPieza(creador.crear(TipoPieza.REINA, ColorPieza.NEGRO), new Posicion(5, 6));
+        Partida partida = new Partida(tablero);
+        assertFalse(partida.estaEnJaque(ColorPieza.BLANCO));
+        assertTrue(partida.estaAhogado(ColorPieza.BLANCO));
+    }
+
+    @Test
+    void noHayAhogadoSiExistenMovimientosLegales() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(7, 7));
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(0, 0));
+        Partida partida = new Partida(tablero);
+        assertFalse(partida.estaAhogado(ColorPieza.BLANCO));
+    }
+
+    @Test
+    void finalizaPartidaPorAhogado() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(2, 2));
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(0, 0));
+        tablero.colocarPieza(creador.crear(TipoPieza.REINA, ColorPieza.BLANCO), new Posicion(2, 1));
+        Partida partida = new Partida(tablero);
+        partida.moverPieza(new Posicion(2, 1), new Posicion(1, 2));
+        assertTrue(partida.estaFinalizada());
+        assertTrue(partida.terminoEnTablas());
+        assertNull(partida.getGanador());
+        assertTrue(partida.estaAhogado(ColorPieza.NEGRO));
+    }
+
+    @Test
+    void promocionaPeonBlancoAReina() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        Posicion origen = new Posicion(1, 0);
+        Posicion destino = new Posicion(0, 0);
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(7, 4));
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(0, 7));
+        tablero.colocarPieza(creador.crear(TipoPieza.PEON, ColorPieza.BLANCO), origen);
+        Partida partida = new Partida(tablero);
+        partida.moverPieza(origen, destino, TipoPieza.REINA);
+        Pieza piezaPromocionada = tablero.obtenerPieza(destino);
+        assertNull(tablero.obtenerPieza(origen));
+        assertEquals(TipoPieza.REINA, piezaPromocionada.getTipo());
+        assertEquals(ColorPieza.BLANCO, piezaPromocionada.getColor());
+        assertEquals(ColorPieza.NEGRO, partida.getTurnoActual());
+    }
+
+    @Test
+    void noPermitePromocionarAReyNiOmitirEleccion() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        Posicion origen = new Posicion(1, 0);
+        Posicion destino = new Posicion(0, 0);
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(7, 4));
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(0, 7));
+        Pieza peon = creador.crear(TipoPieza.PEON, ColorPieza.BLANCO);
+        tablero.colocarPieza(peon, origen);
+        Partida partida = new Partida(tablero);
+        assertThrows(IllegalArgumentException.class, () -> partida.moverPieza(origen, destino, TipoPieza.REY));
+        assertThrows(IllegalArgumentException.class, () -> partida.moverPieza(origen, destino));
+        assertSame(peon, tablero.obtenerPieza(origen));
+        assertNull(tablero.obtenerPieza(destino));
+        assertEquals(ColorPieza.BLANCO, partida.getTurnoActual());
+    }
+
+    @Test
+    void promocionaPeonNegroACaballo() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(7, 7));
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(0, 7));
+        tablero.colocarPieza(creador.crear(TipoPieza.PEON, ColorPieza.NEGRO), new Posicion(6, 0));
+        Partida partida = new Partida(tablero);
+        // primero juegan las blancas
+        partida.moverPieza(new Posicion(7, 7), new Posicion(6, 7));
+        // el peon negro llega a la ultima fila
+        partida.moverPieza(new Posicion(6, 0), new Posicion(7, 0), TipoPieza.CABALLO);
+        Pieza promocionada = tablero.obtenerPieza(new Posicion(7, 0));
+        assertEquals(TipoPieza.CABALLO, promocionada.getTipo());
+        assertEquals(ColorPieza.NEGRO, promocionada.getColor());
+        assertNull(tablero.obtenerPieza(new Posicion(6, 0)));
+        assertEquals(ColorPieza.BLANCO, partida.getTurnoActual());
+    }
+
+    @Test
+    void permitePromocionarCapturandoUnaPieza() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(7, 4));
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(0, 7));
+        tablero.colocarPieza(creador.crear(TipoPieza.PEON, ColorPieza.BLANCO), new Posicion(1, 0));
+        tablero.colocarPieza(creador.crear(TipoPieza.TORRE, ColorPieza.NEGRO), new Posicion(0, 1));
+        Partida partida = new Partida(tablero);
+        partida.moverPieza(new Posicion(1, 0), new Posicion(0, 1), TipoPieza.ALFIL);
+        Pieza promocionada = tablero.obtenerPieza(new Posicion(0, 1));
+        assertEquals(TipoPieza.ALFIL, promocionada.getTipo());
+        assertEquals(ColorPieza.BLANCO, promocionada.getColor());
+        assertNull(tablero.obtenerPieza(new Posicion(1, 0)));
+        assertEquals(ColorPieza.NEGRO, partida.getTurnoActual());
     }
 }

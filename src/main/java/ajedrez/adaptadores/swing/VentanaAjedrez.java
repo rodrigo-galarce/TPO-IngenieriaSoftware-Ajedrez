@@ -1,5 +1,6 @@
 package ajedrez.adaptadores.swing;
 
+import ajedrez.dominio.modelo.pieza.TipoPieza;
 import ajedrez.dominio.puertos.IPartida;
 import ajedrez.dominio.modelo.pieza.ColorPieza;
 import ajedrez.dominio.modelo.pieza.Pieza;
@@ -131,6 +132,7 @@ public class VentanaAjedrez {
     }
 
     public void mostrar() {
+        ventana.setExtendedState(JFrame.MAXIMIZED_BOTH);
         ventana.setVisible(true);
         temporizador.start();
     }
@@ -168,7 +170,18 @@ public class VentanaAjedrez {
 
         // 2do clic - intenta realizar el movimiento
         try {
-            partida.moverPieza(piezaSeleccionada, posicion);
+            Pieza piezaOrigen = partida.obtenerPieza(piezaSeleccionada);
+            boolean promociona = piezaOrigen.getTipo() == TipoPieza.PEON && ((piezaOrigen.getColor() == ColorPieza.BLANCO && posicion.fila() == 0)
+                    || (piezaOrigen.getColor() == ColorPieza.NEGRO && posicion.fila() == 7));
+            if (promociona) {
+                TipoPieza tipoElegido = elegirPromocion();
+                if (tipoElegido == null) {
+                    return;
+                }
+                partida.moverPieza(piezaSeleccionada, posicion, tipoElegido);
+            } else {
+                partida.moverPieza(piezaSeleccionada, posicion);
+            }
             piezaSeleccionada = null;
             actualizarPiezas();
             actualizarSeleccion();
@@ -176,6 +189,21 @@ public class VentanaAjedrez {
         } catch (IllegalArgumentException e) {
             JOptionPane.showMessageDialog(ventana, e.getMessage(), "Movimiento invalido", JOptionPane.WARNING_MESSAGE);
         }
+    }
+
+    private TipoPieza elegirPromocion() {
+        String[] opciones = {"QUEEN", "ROOK", "BISHOP", "KNIGHT"};
+        int eleccion = JOptionPane.showOptionDialog(ventana, "Choose your promotion piece:", "PAWN PROMOTION", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,null, opciones,opciones[0]);
+        if (eleccion == 0) {
+            return TipoPieza.REINA;
+        } else if (eleccion == 1) {
+            return TipoPieza.TORRE;
+        } else if (eleccion == 2) {
+            return TipoPieza.ALFIL;
+        } else if (eleccion == 3) {
+            return TipoPieza.CABALLO;
+        }
+        return null;
     }
 
     private void actualizarSeleccion() {
@@ -209,13 +237,22 @@ public class VentanaAjedrez {
     }
 
     private void actualizarEstado() {
+        ColorPieza turno = partida.getTurnoActual();
         if (partida.estaFinalizada()) {
-            etiquetaEstado.setText("Partida finalizada. Ganador: " + partida.getGanador());
+            if (partida.terminoEnTablas()) {
+                etiquetaEstado.setText("STALEMATE");
+                return;
+            }
+            ColorPieza ganador = partida.getGanador();
+            if (partida.estaEnJaqueMate(turno)) {
+                etiquetaEstado.setText("CHECKMATE - Ganador: " + ganador);
+            } else {
+                etiquetaEstado.setText("TIEMPO AGOTADO - Ganador: " + ganador);
+            }
             return;
         }
-        ColorPieza turno = partida.getTurnoActual();
         if (partida.estaEnJaque(turno)) {
-            etiquetaEstado.setText("Turno: " + turno + " - JAQUE");
+            etiquetaEstado.setText("Turno: " + turno + " - CHECK");
         } else {
             etiquetaEstado.setText("Turno: " + turno);
         }

@@ -6,18 +6,18 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RelojPartidaTest {
     @Test
-    void ambosJugadoresComienzanConTresMinutos() {
+    void ambosJugadoresComienzanConDiezMinutos() {
         RelojPartida reloj = new RelojPartida();
-        assertEquals(180, reloj.getSegundosRestantes(ColorPieza.BLANCO));
-        assertEquals(180, reloj.getSegundosRestantes(ColorPieza.NEGRO));
+        assertEquals(600, reloj.getSegundosRestantes(ColorPieza.BLANCO));
+        assertEquals(600, reloj.getSegundosRestantes(ColorPieza.NEGRO));
     }
 
     @Test
     void descuentaTiempoSoloAlJugadorIndicado() {
         RelojPartida reloj = new RelojPartida();
         reloj.descontarSegundo(ColorPieza.BLANCO);
-        assertEquals(179, reloj.getSegundosRestantes(ColorPieza.BLANCO));
-        assertEquals(180, reloj.getSegundosRestantes(ColorPieza.NEGRO));
+        assertEquals(599, reloj.getSegundosRestantes(ColorPieza.BLANCO));
+        assertEquals(600, reloj.getSegundosRestantes(ColorPieza.NEGRO));
     }
 
     @Test

@@ -8,7 +8,7 @@ public class RelojPartida {
     private int segundosNegras;
 
     public RelojPartida() {
-        this(180);
+        this(600);
     }
 
     public RelojPartida(int segundosIniciales) {
