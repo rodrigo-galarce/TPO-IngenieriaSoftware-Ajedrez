@@ -418,4 +418,77 @@ class PartidaTest {
         assertNull(tablero.obtenerPieza(new Posicion(1, 0)));
         assertEquals(ColorPieza.NEGRO, partida.getTurnoActual());
     }
+
+    @Test
+    void registraCapturaDeUnaPieza() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(7, 4));
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(0, 7));
+        Pieza torreBlanca = creador.crear(TipoPieza.TORRE, ColorPieza.BLANCO);
+        tablero.colocarPieza(torreBlanca, new Posicion(4, 4));
+        tablero.colocarPieza(creador.crear(TipoPieza.PEON, ColorPieza.NEGRO), new Posicion(4, 6));
+        Partida partida = new Partida(tablero);
+        assertEquals(0, partida.getCapturas(torreBlanca));
+        partida.moverPieza(new Posicion(4, 4), new Posicion(4, 6));
+        assertEquals(1, partida.getCapturas(torreBlanca));
+        assertSame(torreBlanca, tablero.obtenerPieza(new Posicion(4, 6)));
+    }
+
+    @Test
+    void conservaCapturasAlPromocionarPeon() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(7, 7));
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(0, 7));
+        Pieza peonBlanco = creador.crear(TipoPieza.PEON, ColorPieza.BLANCO);
+        tablero.colocarPieza(peonBlanco, new Posicion(2, 2));
+        tablero.colocarPieza(creador.crear(TipoPieza.PEON, ColorPieza.NEGRO), new Posicion(1, 1));
+        tablero.colocarPieza(creador.crear(TipoPieza.TORRE, ColorPieza.NEGRO), new Posicion(0, 0));
+        Partida partida = new Partida(tablero);
+        // Primera captura: el peon blanco captura en b7
+        partida.moverPieza(new Posicion(2, 2), new Posicion(1, 1));
+        assertEquals(1, partida.getCapturas(peonBlanco));
+        partida.moverPieza(new Posicion(0, 7), new Posicion(1, 7));
+        // Segunda captura: el peon captura en a8 y promociona
+        partida.moverPieza(new Posicion(1, 1), new Posicion(0, 0), TipoPieza.REINA);
+        Pieza reinaPromocionada = tablero.obtenerPieza(new Posicion(0, 0));
+        assertEquals(TipoPieza.REINA, reinaPromocionada.getTipo());
+        assertEquals(2, partida.getCapturas(reinaPromocionada));
+        assertEquals(0, partida.getCapturas(peonBlanco));
+    }
+
+    @Test
+    void activaKillstreakAlLlegarATresCapturas() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(7, 4));
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(0, 7));
+        Pieza torreBlanca = creador.crear(TipoPieza.TORRE, ColorPieza.BLANCO);
+        tablero.colocarPieza(torreBlanca, new Posicion(4, 3));
+
+        // Tres piezas enemigas para capturar.
+        for (int columna = 3; columna <= 5; columna++) {
+            tablero.colocarPieza(creador.crear(TipoPieza.PEON, ColorPieza.NEGRO), new Posicion(3, columna));
+        }
+        Partida partida = new Partida(tablero);
+        assertFalse(partida.tieneKillstreak(torreBlanca));
+
+        // 1er captura
+        partida.moverPieza(new Posicion(4, 3), new Posicion(3, 3));
+        assertEquals(1, partida.getCapturas(torreBlanca));
+        assertFalse(partida.tieneKillstreak(torreBlanca));
+        partida.moverPieza(new Posicion(0, 7), new Posicion(0, 6));
+
+        // 2da captura
+        partida.moverPieza(new Posicion(3, 3), new Posicion(3, 4));
+        assertEquals(2, partida.getCapturas(torreBlanca));
+        assertFalse(partida.tieneKillstreak(torreBlanca));
+        partida.moverPieza(new Posicion(0, 6), new Posicion(0, 7));
+
+        // 3er captura
+        partida.moverPieza(new Posicion(3, 4), new Posicion(3, 5));
+        assertEquals(3, partida.getCapturas(torreBlanca));
+        assertTrue(partida.tieneKillstreak(torreBlanca));
+    }
 }

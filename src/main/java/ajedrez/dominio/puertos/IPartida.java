@@ -18,6 +18,8 @@ public interface IPartida {
 
     boolean estaEnJaqueMate(ColorPieza color);
 
+    boolean tieneKillstreak(Pieza pieza);
+
     int getSegundosRestantes(ColorPieza color);
 
     boolean estaFinalizada();

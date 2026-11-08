@@ -9,6 +9,7 @@ import ajedrez.dominio.puertos.IPartida;
 import ajedrez.dominio.reglas.jaque.DetectorJaque;
 import ajedrez.dominio.modelo.creacion.CreacionDePiezas;
 import java.util.Objects;
+import java.util.IdentityHashMap;
 
 public class Partida implements IPartida {
     private final Tablero tablero;
@@ -18,6 +19,7 @@ public class Partida implements IPartida {
     private final CreacionDePiezas creadorPiezas;
     private ColorPieza ganador;
     private boolean tablasPorAhogado;
+    private final IdentityHashMap<Pieza, Integer> capturasPorPieza;
 
     public Partida(Tablero tablero) {
         this(tablero, new DetectorJaque(), new RelojPartida());
@@ -35,6 +37,7 @@ public class Partida implements IPartida {
         this.creadorPiezas = new CreacionDePiezas();
         this.ganador = null;
         this.tablasPorAhogado = false;
+        this.capturasPorPieza = new IdentityHashMap<>();
     }
 
     public Tablero getTablero() {
@@ -46,6 +49,16 @@ public class Partida implements IPartida {
         return tablero.obtenerPieza(posicion);
     }
 
+    public int getCapturas(Pieza pieza) {
+        Objects.requireNonNull(pieza);
+        return capturasPorPieza.getOrDefault(pieza, 0);
+    }
+
+    @Override
+    public boolean tieneKillstreak(Pieza pieza) {
+        return getCapturas(pieza) >= 3;
+    }
+
     @Override
     public ColorPieza getTurnoActual() {
         return turnoActual;
@@ -54,7 +67,7 @@ public class Partida implements IPartida {
     @Override
     public void moverPieza(Posicion origen, Posicion destino) {
         moverPieza(origen, destino, null);
-    }
+            }
 
     @Override
     public void moverPieza(Posicion origen, Posicion destino, TipoPieza tipoPromocion) {
@@ -90,10 +103,20 @@ public class Partida implements IPartida {
         }
         ColorPieza jugadorQueMovio = turnoActual;
         tablero.moverPieza(origen, destino);
+        if (piezaDestino != null) {
+            int capturasActuales = getCapturas(pieza);
+            capturasPorPieza.put(pieza, capturasActuales + 1);
+        }
         // la promocion forma parte del mismo movimiento
         if (promociona) {
             Pieza nuevaPieza = creadorPiezas.crear(tipoPromocion, pieza.getColor());
             tablero.reemplazarPieza(nuevaPieza, destino);
+            // se conservan las capturas del peon promocionado
+            int capturasAcumuladas = getCapturas(pieza);
+            if (capturasAcumuladas > 0) {
+                capturasPorPieza.put(nuevaPieza, capturasAcumuladas);
+                capturasPorPieza.remove(pieza);
+            }
         }
         if (turnoActual == ColorPieza.BLANCO) {
             turnoActual = ColorPieza.NEGRO;
