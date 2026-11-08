@@ -10,8 +10,24 @@ import java.awt.*;
 import java.util.Objects;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 public class VentanaAjedrez {
+    private static final int FILAS = 8;
+    private static final int COLUMNAS = 8;
+
+    // tamaño visual del tablero en pantalla
+    private static final int ANCHO_TABLERO_VISUAL = 820;
+    private static final int ALTO_TABLERO_VISUAL = 820;
+
+    // zona interna donde están las 64 casillas dentro del png
+    private static final int ZONA_CASILLAS_X = 272;
+    private static final int ZONA_CASILLAS_Y = 208;
+    private static final int ZONA_CASILLAS_ANCHO = 1508;
+    private static final int ZONA_CASILLAS_ALTO = 1495;
+
     private final JFrame ventana;
     private final IPartida partida;
     private final JLabel[][] casillas;
@@ -20,6 +36,7 @@ public class VentanaAjedrez {
     private final JLabel relojBlancas;
     private final JLabel relojNegras;
     private final Timer temporizador;
+    private final Map<String, ImageIcon> iconosPiezas = new HashMap<>();
 
     public VentanaAjedrez(IPartida partida) {
         this.partida = Objects.requireNonNull(partida);
@@ -29,32 +46,59 @@ public class VentanaAjedrez {
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ventana.setResizable(false);
 
-        JPanel panelTablero = new JPanel(new GridLayout(8, 8));
-        Color colorClaro = new Color(240, 217, 181);
-        Color colorOscuro = new Color(181, 136, 99);
+        Image imagenFondo = new ImageIcon(Objects.requireNonNull(getClass().getResource("/imagenes/fondo.png"), "No se encontro la imagen del fondo")).getImage();
+        JPanel panelFondo = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                int anchoImagen = imagenFondo.getWidth(this);
+                int altoImagen = imagenFondo.getHeight(this);
+                double escala = Math.max((double) getWidth() / anchoImagen, (double) getHeight() / altoImagen);
+                int ancho = (int) Math.ceil(anchoImagen * escala);
+                int alto = (int) Math.ceil(altoImagen * escala);
+                int x = (getWidth() - ancho) / 2;
+                int y = (getHeight() - alto) / 2;
+                g.drawImage(imagenFondo, x, y, ancho, alto, this);
+            }
+        };
+        ventana.setContentPane(panelFondo);
 
-        for (int fila = 0; fila < 8; fila++) {
-            for (int columna = 0; columna < 8; columna++) {
+        Image imagenTablero = new ImageIcon(Objects.requireNonNull(getClass().getResource("/imagenes/tablero.png"),"No se encontro la imagen del tablero")).getImage();
+        JPanel panelTablero = new JPanel(null) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);g.drawImage(imagenTablero, 0, 0, getWidth(), getHeight(), this);
+            }
+        };
+        panelTablero.setOpaque(false);
+        panelTablero.setPreferredSize(new Dimension(ANCHO_TABLERO_VISUAL, ALTO_TABLERO_VISUAL));
+
+        // casillas
+        double escalaX = (double) ANCHO_TABLERO_VISUAL / 2048;
+        double escalaY = (double) ALTO_TABLERO_VISUAL / 2048;
+
+        for (int fila = 0; fila < FILAS; fila++) {
+            for (int columna = 0; columna < COLUMNAS; columna++) {
                 JLabel casilla = new JLabel();
-                casilla.setPreferredSize(new Dimension(70, 70));
                 casilla.setHorizontalAlignment(SwingConstants.CENTER);
-                casilla.setVerticalAlignment(SwingConstants.CENTER);
-                casilla.setOpaque(true);
+                casilla.setVerticalAlignment(SwingConstants.BOTTOM);
+                casilla.setOpaque(false);
                 casilla.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 44));
 
-                if ((fila + columna) % 2 == 0) {
-                    casilla.setBackground(colorClaro);
-                } else {
-                    casilla.setBackground(colorOscuro);
-                }
+                int x = (int) Math.round((ZONA_CASILLAS_X + columna * ZONA_CASILLAS_ANCHO / 8.0) * escalaX);
+                int y = (int) Math.round((ZONA_CASILLAS_Y + fila * ZONA_CASILLAS_ALTO / 8.0) * escalaY);
+                int xFinal = (int) Math.round((ZONA_CASILLAS_X + (columna + 1) * ZONA_CASILLAS_ANCHO / 8.0) * escalaX);
+                int yFinal = (int) Math.round((ZONA_CASILLAS_Y + (fila + 1) * ZONA_CASILLAS_ALTO / 8.0) * escalaY);
+                casilla.setBounds(x, y, xFinal - x, yFinal - y);
 
                 Pieza pieza = partida.obtenerPieza(new Posicion(fila, columna));
-                casilla.setText(obtenerSimbolo(pieza));
+                casilla.setIcon(obtenerIcono(pieza));
+
                 casillas[fila][columna] = casilla;
-                // se guardan las coordenadas de la casilla
+
                 final int filaActual = fila;
                 final int columnaActual = columna;
-                // se detecta cuando el usuario hace clic
+
                 casilla.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
@@ -64,7 +108,12 @@ public class VentanaAjedrez {
                 panelTablero.add(casilla);
             }
         }
-        ventana.add(panelTablero, BorderLayout.CENTER);
+
+        JPanel contenedorTablero = new JPanel(new GridBagLayout());
+        contenedorTablero.setOpaque(false);
+        contenedorTablero.add(panelTablero);
+        ventana.add(contenedorTablero, BorderLayout.CENTER);
+
         // se crean los dos relojes
         relojBlancas = new JLabel();
         relojNegras = new JLabel();
@@ -106,29 +155,45 @@ public class VentanaAjedrez {
         ventana.setLocationRelativeTo(null);
     }
 
-    private String obtenerSimbolo(Pieza pieza) {
+    private ImageIcon obtenerIcono(Pieza pieza) {
         if (pieza == null) {
-            return "";
+            return null;
         }
+        String color;
+        String carpeta;
         if (pieza.getColor() == ColorPieza.BLANCO) {
-            return switch (pieza.getTipo()) {
-                case PEON -> "♙";
-                case TORRE -> "♖";
-                case CABALLO -> "♘";
-                case ALFIL -> "♗";
-                case REINA -> "♕";
-                case REY -> "♔";
-            };
+            color = "blanco";
+            carpeta = "blancas";
         } else {
-            return switch (pieza.getTipo()) {
-                case PEON -> "♟";
-                case TORRE -> "♜";
-                case CABALLO -> "♞";
-                case ALFIL -> "♝";
-                case REINA -> "♛";
-                case REY -> "♚";
-            };
+            color = "negro";
+            carpeta = "negras";
         }
+        String tipo = pieza.getTipo().name().toLowerCase();
+        String nombreArchivo = color + "_" + tipo;
+        // primero buscamos si ya tenemos la imagen cargada
+        if (iconosPiezas.containsKey(nombreArchivo)) {
+            return iconosPiezas.get(nombreArchivo);
+        }
+        String ruta = "/imagenes/piezas/" + carpeta + "/" + nombreArchivo + ".png";
+        URL recurso = getClass().getResource(ruta);
+        if (recurso == null) {
+            throw new IllegalStateException("No se encontro la imagen: " + ruta);
+        }
+        ImageIcon original = new ImageIcon(recurso);
+        int anchoOriginal = original.getIconWidth();
+        int altoOriginal = original.getIconHeight();
+        if (anchoOriginal <= 0 || altoOriginal <= 0) {
+            throw new IllegalStateException("No se pudo cargar la imagen: " + ruta);
+        }
+        // tamaño maximo de las piezas dentro de la casilla
+        int tamanoMaximo = 68;
+        double escala = Math.min((double) tamanoMaximo / anchoOriginal, (double) tamanoMaximo / altoOriginal);
+        int ancho = Math.max(1, (int) Math.round(anchoOriginal * escala));
+        int alto = Math.max(1, (int) Math.round(altoOriginal * escala));
+        Image imagenEscalada = original.getImage().getScaledInstance(ancho, alto, Image.SCALE_SMOOTH);
+        ImageIcon icono = new ImageIcon(imagenEscalada);
+        iconosPiezas.put(nombreArchivo, icono);
+        return icono;
     }
 
     public void mostrar() {
@@ -207,19 +272,13 @@ public class VentanaAjedrez {
     }
 
     private void actualizarSeleccion() {
-        Color colorClaro = new Color(240, 217, 181);
-        Color colorOscuro = new Color(181, 136, 99);
-        Color colorSeleccionado = new Color(130, 190, 120);
-
-        for (int fila = 0; fila < 8; fila++) {
-            for (int columna = 0; columna < 8; columna++) {
+        for (int fila = 0; fila < FILAS; fila++) {
+            for (int columna = 0; columna < COLUMNAS; columna++) {
                 Posicion posicion = new Posicion(fila, columna);
                 if (posicion.equals(piezaSeleccionada)) {
-                    casillas[fila][columna].setBackground(colorSeleccionado);
-                } else if ((fila + columna) % 2 == 0) {
-                    casillas[fila][columna].setBackground(colorClaro);
+                    casillas[fila][columna].setBorder(BorderFactory.createLineBorder(new Color(130, 190, 120), 3));
                 } else {
-                    casillas[fila][columna].setBackground(colorOscuro);
+                    casillas[fila][columna].setBorder(null);
                 }
             }
         }
@@ -230,7 +289,7 @@ public class VentanaAjedrez {
             for (int columna = 0; columna < 8; columna++) {
                 Posicion posicion = new Posicion(fila, columna);
                 Pieza pieza = partida.obtenerPieza(posicion);
-                casillas[fila][columna].setText(obtenerSimbolo(pieza));
+                casillas[fila][columna].setIcon(obtenerIcono(pieza));
             }
         }
         ventana.setTitle("Ajedrez - Turno: " + partida.getTurnoActual());
