@@ -14,6 +14,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 public class VentanaAjedrez {
     private static final int FILAS = 8;
@@ -40,7 +42,7 @@ public class VentanaAjedrez {
     private final Timer temporizadorAuras;
     private final Map<String, ImageIcon> iconosPiezas = new HashMap<>();
     private List<Posicion> movimientosDisponibles = List.of();
-    private final int tamanoTableroVisual;
+    private int tamanoTableroVisual;
     private final Runnable volverAlMenu;
     private final Runnable iniciarNuevaPartida;
     private boolean resultadoMostrado = false;
@@ -57,12 +59,18 @@ public class VentanaAjedrez {
         piezaSeleccionada = null;
         ventana = new JFrame("The Elder Chess: Skyrim");
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        ventana.setResizable(false);
+        ventana.setResizable(true);
+        ventana.setMinimumSize(new Dimension(650, 550));
         auraNorte = new ImageIcon(Objects.requireNonNull(getClass().getResource("/imagenes/efectos/aura_blanco.gif"), "No se encontro el aura del Norte"));
         auraSombras = new ImageIcon(Objects.requireNonNull(getClass().getResource("/imagenes/efectos/aura_negro.gif"), "No se encontro el aura de las Sombras"));
 
         Rectangle pantalla = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
-        tamanoTableroVisual = Math.min(820, Math.min(pantalla.width - 80, pantalla.height - 160));
+        // espacio disponible para el tablero
+        int espacioHorizontal = pantalla.width - 80;
+        // reservamos espacio para el titulo, los botones, el indicador de turno y los relojes
+        int espacioVertical = pantalla.height - 260;
+        // mantenemos el tablero cuadrado y evitamos que supere los 820 pixeles
+        tamanoTableroVisual = Math.min(820, Math.min(espacioHorizontal, espacioVertical));
 
         Image imagenFondo = new ImageIcon(Objects.requireNonNull(getClass().getResource("/imagenes/fondo.png"), "No se encontro la imagen del fondo")).getImage();
         JPanel panelFondo = new JPanel(new BorderLayout()) {
@@ -120,9 +128,6 @@ public class VentanaAjedrez {
         panelTablero.setPreferredSize(new Dimension(tamanoTableroVisual, tamanoTableroVisual));
 
         // casillas
-        double escalaX = (double) tamanoTableroVisual / 2048;
-        double escalaY = (double) tamanoTableroVisual / 2048;
-
         for (int fila = 0; fila < FILAS; fila++) {
             for (int columna = 0; columna < COLUMNAS; columna++) {
                 final int filaActual = fila;
@@ -169,11 +174,7 @@ public class VentanaAjedrez {
                 casilla.setOpaque(false);
                 casilla.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 44));
 
-                int x = (int) Math.round((ZONA_CASILLAS_X + columna * ZONA_CASILLAS_ANCHO / 8.0) * escalaX);
-                int y = (int) Math.round((ZONA_CASILLAS_Y + fila * ZONA_CASILLAS_ALTO / 8.0) * escalaY);
-                int xFinal = (int) Math.round((ZONA_CASILLAS_X + (columna + 1) * ZONA_CASILLAS_ANCHO / 8.0) * escalaX);
-                int yFinal = (int) Math.round((ZONA_CASILLAS_Y + (fila + 1) * ZONA_CASILLAS_ALTO / 8.0) * escalaY);
-                casilla.setBounds(x, y, xFinal - x, yFinal - y);
+                ubicarCasilla(casilla, fila, columna, tamanoTableroVisual);
 
                 Pieza pieza = partida.obtenerPieza(new Posicion(fila, columna));
                 casilla.setIcon(obtenerIcono(pieza));
@@ -260,8 +261,37 @@ public class VentanaAjedrez {
         // Centramos ambos componentes sobre el fondo.
         contenedorTablero.add(panelJuego);
         ventana.add(contenedorTablero, BorderLayout.CENTER);
-
-        // Los relojes quedan separados debajo.
+        contenedorTablero.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                // se calcula el espacio disponible para el tablero
+                int anchoDisponible = contenedorTablero.getWidth() - 20;
+                int altoDisponible = contenedorTablero.getHeight() - etiquetaEstado.getPreferredSize().height - 10;
+                // tablero siempre cuadrado
+                int nuevoTamano = Math.min(820, Math.min(anchoDisponible, altoDisponible));
+                // evita tamaños invalidos
+                if (nuevoTamano < 200 || nuevoTamano == tamanoTableroVisual) {
+                    return;
+                }
+                tamanoTableroVisual = nuevoTamano;
+                // se ajusta el tamaño de la imagen del tablero
+                panelTablero.setPreferredSize(new Dimension(nuevoTamano, nuevoTamano));
+                // se reubican las 64 casillas
+                for (int fila = 0; fila < FILAS; fila++) {
+                    for (int columna = 0; columna < COLUMNAS; columna++) {
+                        ubicarCasilla(casillas[fila][columna], fila, columna, nuevoTamano);
+                    }
+                }
+                // se vuelven a escalar los png de las piezas
+                iconosPiezas.clear();
+                actualizarPiezas();
+                // se actualiza la distribucion y el dibujo
+                panelTablero.revalidate();
+                contenedorTablero.revalidate();
+                contenedorTablero.repaint();
+            }
+        });
+        // los relojes quedan separados debajo.
         ventana.add(panelRelojes, BorderLayout.SOUTH);
 
         // cada segundo le avisamos a Partida que transcurrio tiempo
@@ -281,9 +311,9 @@ public class VentanaAjedrez {
         actualizarRelojes();
         actualizarEstado();
 
-        JLabel tituloJuego = new JLabel("THE ELDER CHESS: SKYRIM", SwingConstants.CENTER);
+        JLabel tituloJuego = new TituloSkyrim("THE ELDER CHESS: SKYRIM", 30f);
         tituloJuego.setFont(FuentesSwing.cargarFuente("/fuentes/CinzelDecorative-Bold.ttf", 30f));
-        tituloJuego.setForeground(new Color(235, 220, 190));
+        tituloJuego.setOpaque(false);
         JPanel panelSuperior = new JPanel(new BorderLayout());
         panelSuperior.setOpaque(false);
         panelSuperior.setBorder(BorderFactory.createEmptyBorder(10, 15, 5, 15));
@@ -575,5 +605,14 @@ public class VentanaAjedrez {
         int minutos = segundosTotales / 60;
         int segundos = segundosTotales % 60;
         return String.format("%02d:%02d", minutos, segundos);
+    }
+
+    private void ubicarCasilla(JLabel casilla, int fila, int columna, int tamanoTablero) {
+        double escala = (double) tamanoTablero / 2048.0;
+        int x = (int) Math.round((ZONA_CASILLAS_X + columna * ZONA_CASILLAS_ANCHO / 8.0) * escala);
+        int y = (int) Math.round((ZONA_CASILLAS_Y + fila * ZONA_CASILLAS_ALTO / 8.0) * escala);
+        int xFinal = (int) Math.round((ZONA_CASILLAS_X + (columna + 1) * ZONA_CASILLAS_ANCHO / 8.0) * escala);
+        int yFinal = (int) Math.round((ZONA_CASILLAS_Y + (fila + 1) * ZONA_CASILLAS_ALTO / 8.0) * escala);
+        casilla.setBounds(x, y, xFinal - x, yFinal - y);
     }
 }
