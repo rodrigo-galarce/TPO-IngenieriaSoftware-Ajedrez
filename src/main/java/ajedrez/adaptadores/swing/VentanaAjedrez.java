@@ -39,14 +39,21 @@ public class VentanaAjedrez {
     private final Timer temporizador;
     private final Map<String, ImageIcon> iconosPiezas = new HashMap<>();
     private List<Posicion> movimientosDisponibles = List.of();
+    private final int tamanoTableroVisual;
+    private final Runnable volverAlMenu;
+    private boolean resultadoMostrado = false;
 
-    public VentanaAjedrez(IPartida partida) {
+    public VentanaAjedrez(IPartida partida, Runnable volverAlMenu) {
         this.partida = Objects.requireNonNull(partida);
+        this.volverAlMenu = Objects.requireNonNull(volverAlMenu);
         casillas = new JLabel[8][8];
         piezaSeleccionada = null;
         ventana = new JFrame("Ajedrez");
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ventana.setResizable(false);
+
+        Rectangle pantalla = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        tamanoTableroVisual = Math.min(820, Math.min(pantalla.width - 80, pantalla.height - 160));
 
         Image imagenFondo = new ImageIcon(Objects.requireNonNull(getClass().getResource("/imagenes/fondo.png"), "No se encontro la imagen del fondo")).getImage();
         JPanel panelFondo = new JPanel(new BorderLayout()) {
@@ -73,11 +80,11 @@ public class VentanaAjedrez {
             }
         };
         panelTablero.setOpaque(false);
-        panelTablero.setPreferredSize(new Dimension(ANCHO_TABLERO_VISUAL, ALTO_TABLERO_VISUAL));
+        panelTablero.setPreferredSize(new Dimension(tamanoTableroVisual, tamanoTableroVisual));
 
         // casillas
-        double escalaX = (double) ANCHO_TABLERO_VISUAL / 2048;
-        double escalaY = (double) ALTO_TABLERO_VISUAL / 2048;
+        double escalaX = (double) tamanoTableroVisual / 2048;
+        double escalaY = (double) tamanoTableroVisual / 2048;
 
         for (int fila = 0; fila < FILAS; fila++) {
             for (int columna = 0; columna < COLUMNAS; columna++) {
@@ -148,8 +155,6 @@ public class VentanaAjedrez {
 
         JPanel contenedorTablero = new JPanel(new GridBagLayout());
         contenedorTablero.setOpaque(false);
-        contenedorTablero.add(panelTablero);
-        ventana.add(contenedorTablero, BorderLayout.CENTER);
 
         // se crean los dos relojes
         relojBlancas = new JLabel();
@@ -159,9 +164,19 @@ public class VentanaAjedrez {
         Font fuenteReloj = new Font("Arial", Font.BOLD, 22);
         relojBlancas.setFont(fuenteReloj);
         relojNegras.setFont(fuenteReloj);
+        relojBlancas.setForeground(new Color(210, 230, 245));
+        relojNegras.setForeground(new Color(240, 195, 185));
+
+        JButton botonMenu = new JButton("MAIN MENU");
+        botonMenu.setFont(new Font("Serif", Font.BOLD, 16));
+        botonMenu.setFocusPainted(false);
+
+        botonMenu.addActionListener(e -> confirmarVolverAlMenu());
 
         // panel para poner los relojes uno al lado del otro
-        JPanel panelRelojes = new JPanel(new GridLayout(1, 2));
+        JPanel panelRelojes = new JPanel(new GridLayout(1, 2, 20, 0));
+        panelRelojes.setOpaque(false);
+        panelRelojes.setBorder(BorderFactory.createEmptyBorder(5, 30, 12, 30));
         panelRelojes.add(relojBlancas);
         panelRelojes.add(relojNegras);
 
@@ -170,12 +185,21 @@ public class VentanaAjedrez {
         etiquetaEstado.setHorizontalAlignment(SwingConstants.CENTER);
         etiquetaEstado.setFont(new Font("Arial", Font.BOLD, 16));
         etiquetaEstado.setPreferredSize(new Dimension(560, 40));
+        etiquetaEstado.setForeground(new Color(235, 220, 190));
+        etiquetaEstado.setOpaque(false);
 
-        // panel inferior con relojes y estado
-        JPanel panelInferior = new JPanel(new BorderLayout());
-        panelInferior.add(panelRelojes, BorderLayout.NORTH);
-        panelInferior.add(etiquetaEstado, BorderLayout.SOUTH);
-        ventana.add(panelInferior, BorderLayout.SOUTH);
+        // El tablero y el indicador de turno forman un mismo conjunto.
+        JPanel panelJuego = new JPanel(new BorderLayout());
+        panelJuego.setOpaque(false);
+        panelJuego.add(panelTablero, BorderLayout.CENTER);
+        panelJuego.add(etiquetaEstado, BorderLayout.SOUTH);
+
+        // Centramos ambos componentes sobre el fondo.
+        contenedorTablero.add(panelJuego);
+        ventana.add(contenedorTablero, BorderLayout.CENTER);
+
+        // Los relojes quedan separados debajo.
+        ventana.add(panelRelojes, BorderLayout.SOUTH);
 
         // cada segundo le avisamos a Partida que transcurrio tiempo
         temporizador = new Timer(1000, e -> {
@@ -190,6 +214,21 @@ public class VentanaAjedrez {
         actualizarEstado();
         ventana.pack();
         ventana.setLocationRelativeTo(null);
+
+        JLabel tituloJuego = new JLabel("THE ELDER CHESS: SKYRIM", SwingConstants.CENTER);
+        tituloJuego.setFont(new Font("Serif", Font.BOLD, 30));
+        tituloJuego.setForeground(new Color(235, 220, 190));
+        JPanel panelSuperior = new JPanel(new BorderLayout());
+        panelSuperior.setOpaque(false);
+        panelSuperior.setBorder(BorderFactory.createEmptyBorder(10, 15, 5, 15));
+        // espacio izquierdo para mantener el titulo centrado
+        JPanel espacioIzquierdo = new JPanel();
+        espacioIzquierdo.setOpaque(false);
+        espacioIzquierdo.setPreferredSize(botonMenu.getPreferredSize());
+        panelSuperior.add(espacioIzquierdo, BorderLayout.WEST);
+        panelSuperior.add(tituloJuego, BorderLayout.CENTER);
+        panelSuperior.add(botonMenu, BorderLayout.EAST);
+        ventana.add(panelSuperior, BorderLayout.NORTH);
     }
 
     private ImageIcon obtenerIcono(Pieza pieza) {
@@ -223,7 +262,7 @@ public class VentanaAjedrez {
             throw new IllegalStateException("No se pudo cargar la imagen: " + ruta);
         }
         // tamaño maximo de las piezas dentro de la casilla
-        int tamanoMaximo = 68;
+        int tamanoMaximo = (int) Math.round(tamanoTableroVisual * 68.0 / 820.0);
         double escala = Math.min((double) tamanoMaximo / anchoOriginal, (double) tamanoMaximo / altoOriginal);
         int ancho = Math.max(1, (int) Math.round(anchoOriginal * escala));
         int alto = Math.max(1, (int) Math.round(altoOriginal * escala));
@@ -237,6 +276,24 @@ public class VentanaAjedrez {
         ventana.setExtendedState(JFrame.MAXIMIZED_BOTH);
         ventana.setVisible(true);
         temporizador.start();
+    }
+
+    private void confirmarVolverAlMenu() {
+        boolean relojEstabaActivo = temporizador.isRunning();
+
+        // pausar el reloj mientras el jugador decide
+        temporizador.stop();
+
+        int respuesta = JOptionPane.showConfirmDialog(ventana, "The current game will be lost. Return to main menu?", "RETURN TO MAIN MENU", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (respuesta == JOptionPane.YES_OPTION) {
+            ventana.dispose();
+            volverAlMenu.run();
+        } else {
+            // si cancela, continua la partida
+            if (relojEstabaActivo && !partida.estaFinalizada()) {
+                temporizador.start();
+            }
+        }
     }
 
     private void seleccionarCasilla(Posicion posicion) {
@@ -335,15 +392,32 @@ public class VentanaAjedrez {
     private void actualizarEstado() {
         ColorPieza turno = partida.getTurnoActual();
         if (partida.estaFinalizada()) {
+            String titulo;
+            String mensaje;
             if (partida.terminoEnTablas()) {
+                titulo = "STALEMATE";
+                mensaje = "The game ends in a draw.";
                 etiquetaEstado.setText("STALEMATE");
-                return;
-            }
-            ColorPieza ganador = partida.getGanador();
-            if (partida.estaEnJaqueMate(turno)) {
-                etiquetaEstado.setText("CHECKMATE - Ganador: " + ganador);
             } else {
-                etiquetaEstado.setText("TIEMPO AGOTADO - Ganador: " + ganador);
+                ColorPieza ganador = partida.getGanador();
+                String ejercitoGanador;
+                if (ganador == ColorPieza.BLANCO) {
+                    ejercitoGanador = "ARMY OF THE NORTH";
+                } else {
+                    ejercitoGanador = "ARMY OF SHADOWS";
+                }
+                if (partida.estaEnJaqueMate(turno)) {
+                    titulo = "CHECKMATE";
+                } else {
+                    titulo = "TIME OUT";
+                }
+                mensaje = ejercitoGanador + " WINS!";
+                etiquetaEstado.setText(titulo + " - " + ejercitoGanador);
+            }
+            if (!resultadoMostrado) {
+                resultadoMostrado = true;
+                temporizador.stop();
+                JOptionPane.showMessageDialog(ventana, mensaje, titulo, JOptionPane.INFORMATION_MESSAGE);
             }
             return;
         }
