@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 public class VentanaAjedrez {
     private static final int FILAS = 8;
@@ -37,6 +38,7 @@ public class VentanaAjedrez {
     private final JLabel relojNegras;
     private final Timer temporizador;
     private final Map<String, ImageIcon> iconosPiezas = new HashMap<>();
+    private List<Posicion> movimientosDisponibles = List.of();
 
     public VentanaAjedrez(IPartida partida) {
         this.partida = Objects.requireNonNull(partida);
@@ -79,7 +81,45 @@ public class VentanaAjedrez {
 
         for (int fila = 0; fila < FILAS; fila++) {
             for (int columna = 0; columna < COLUMNAS; columna++) {
-                JLabel casilla = new JLabel();
+                final int filaActual = fila;
+                final int columnaActual = columna;
+                JLabel casilla = new JLabel() {
+                    @Override
+                    protected void paintComponent(Graphics g) {
+                        super.paintComponent(g);
+                        Graphics2D g2 = (Graphics2D) g.create();
+                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                        Posicion posicion = new Posicion(filaActual, columnaActual);
+
+                        // resaltar la pieza seleccionada en celeste
+                        if (posicion.equals(piezaSeleccionada)) {
+                            g2.setColor(new Color(100, 190, 255, 45));
+                            g2.fillRoundRect(2, 2, getWidth() - 4, getHeight() - 4, 12, 12);
+                            g2.setColor(new Color(130, 210, 255, 190));
+                            g2.setStroke(new BasicStroke(2.5f));
+                            g2.drawRoundRect(3, 3, getWidth() - 7, getHeight() - 7, 12, 12);
+                        }
+                        // dibujar los destinos legales
+                        if (movimientosDisponibles.contains(posicion)) {
+                            Pieza piezaDestino = partida.obtenerPieza(posicion);
+                            if (piezaDestino == null) {
+                                // casilla libre: circulo celeste en el centro
+                                int diametro = Math.min(getWidth(), getHeight()) / 4;
+                                int x = (getWidth() - diametro) / 2;
+                                int y = (getHeight() - diametro) / 2;
+                                g2.setColor(new Color(115, 205, 255, 170));
+                                g2.fillOval(x, y, diametro, diametro);
+                            } else {
+                                // captura: anillo alrededor de la pieza enemiga
+                                int margen = 6;
+                                g2.setColor(new Color(115, 205, 255, 210));
+                                g2.setStroke(new BasicStroke(4f));
+                                g2.drawOval(margen, margen, getWidth() - margen * 2, getHeight() - margen * 2);
+                            }
+                        }
+                        g2.dispose();
+                    }
+                };
                 casilla.setHorizontalAlignment(SwingConstants.CENTER);
                 casilla.setVerticalAlignment(SwingConstants.BOTTOM);
                 casilla.setOpaque(false);
@@ -95,9 +135,6 @@ public class VentanaAjedrez {
                 casilla.setIcon(obtenerIcono(pieza));
 
                 casillas[fila][columna] = casilla;
-
-                final int filaActual = fila;
-                final int columnaActual = columna;
 
                 casilla.addMouseListener(new MouseAdapter() {
                     @Override
@@ -272,14 +309,14 @@ public class VentanaAjedrez {
     }
 
     private void actualizarSeleccion() {
-        for (int fila = 0; fila < FILAS; fila++) {
-            for (int columna = 0; columna < COLUMNAS; columna++) {
-                Posicion posicion = new Posicion(fila, columna);
-                if (posicion.equals(piezaSeleccionada)) {
-                    casillas[fila][columna].setBorder(BorderFactory.createLineBorder(new Color(130, 190, 120), 3));
-                } else {
-                    casillas[fila][columna].setBorder(null);
-                }
+        if (piezaSeleccionada == null) {
+            movimientosDisponibles = List.of();
+        } else {
+            movimientosDisponibles = partida.obtenerMovimientosLegales(piezaSeleccionada);
+        }
+        for (int fila = 0; fila < 8; fila++) {
+            for (int columna = 0; columna < 8; columna++) {
+                casillas[fila][columna].repaint();
             }
         }
     }

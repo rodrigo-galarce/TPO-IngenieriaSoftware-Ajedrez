@@ -9,6 +9,9 @@ import ajedrez.dominio.modelo.tablero.Posicion;
 import ajedrez.dominio.modelo.creacion.ConfiguracionInicial;
 import ajedrez.dominio.reglas.jaque.DetectorJaque;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class PartidaTest {
@@ -490,5 +493,20 @@ class PartidaTest {
         partida.moverPieza(new Posicion(3, 4), new Posicion(3, 5));
         assertEquals(3, partida.getCapturas(torreBlanca));
         assertTrue(partida.tieneKillstreak(torreBlanca));
+    }
+
+    @Test
+    void obtieneMovimientosLegalesDeUnPeon() {
+        Tablero tablero = new Tablero(8, 8);
+        CreacionDePiezas creador = new CreacionDePiezas();
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.BLANCO), new Posicion(7, 4));
+        tablero.colocarPieza(creador.crear(TipoPieza.REY, ColorPieza.NEGRO), new Posicion(0, 4));
+        tablero.colocarPieza(creador.crear(TipoPieza.PEON, ColorPieza.BLANCO), new Posicion(6, 3));
+        Partida partida = new Partida(tablero);
+        List<Posicion> movimientos = partida.obtenerMovimientosLegales(new Posicion(6, 3));
+        assertEquals(2, movimientos.size());
+        assertTrue(movimientos.contains(new Posicion(5, 3)));
+        assertTrue(movimientos.contains(new Posicion(4, 3)));
+        assertFalse(movimientos.contains(new Posicion(5, 2)));
     }
 }

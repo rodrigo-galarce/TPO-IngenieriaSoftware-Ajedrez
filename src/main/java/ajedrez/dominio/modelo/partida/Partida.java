@@ -10,6 +10,8 @@ import ajedrez.dominio.reglas.jaque.DetectorJaque;
 import ajedrez.dominio.modelo.creacion.CreacionDePiezas;
 import java.util.Objects;
 import java.util.IdentityHashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Partida implements IPartida {
     private final Tablero tablero;
@@ -47,6 +49,27 @@ public class Partida implements IPartida {
     @Override
     public Pieza obtenerPieza(Posicion posicion) {
         return tablero.obtenerPieza(posicion);
+    }
+
+    @Override
+    public List<Posicion> obtenerMovimientosLegales(Posicion origen) {
+        if (origen == null || !tablero.estaDentro(origen) || estaFinalizada()) {
+            return List.of();
+        }
+        Pieza pieza = tablero.obtenerPieza(origen);
+        if (pieza == null || pieza.getColor() != turnoActual) {
+            return List.of();
+        }
+        List<Posicion> movimientos = new ArrayList<>();
+        for (int fila = 0; fila < tablero.getFilas(); fila++) {
+            for (int columna = 0; columna < tablero.getColumnas(); columna++) {
+                Posicion destino = new Posicion(fila, columna);
+                if (esMovimientoLegal(tablero, origen, destino, turnoActual)) {
+                    movimientos.add(destino);
+                }
+            }
+        }
+        return movimientos;
     }
 
     public int getCapturas(Pieza pieza) {

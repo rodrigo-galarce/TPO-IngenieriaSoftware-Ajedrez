@@ -4,9 +4,12 @@ import ajedrez.dominio.modelo.pieza.ColorPieza;
 import ajedrez.dominio.modelo.pieza.Pieza;
 import ajedrez.dominio.modelo.pieza.TipoPieza;
 import ajedrez.dominio.modelo.tablero.Posicion;
+import java.util.List;
 
 public interface IPartida {
-    Pieza obtenerPieza(Posicion posicion);;
+    Pieza obtenerPieza(Posicion posicion);
+
+    List<Posicion> obtenerMovimientosLegales(Posicion origen);;
 
     ColorPieza getTurnoActual();
 
