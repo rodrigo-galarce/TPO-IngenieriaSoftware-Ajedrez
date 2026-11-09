@@ -24,7 +24,7 @@ public class App {
         ConfiguracionInicial configuracion = new ConfiguracionInicial(creador);
         configuracion.colocarPiezas(tablero);
         Partida partida = new Partida(tablero);
-        VentanaAjedrez ventana = new VentanaAjedrez(partida, App::mostrarMenu);
+        VentanaAjedrez ventana = new VentanaAjedrez(partida, App::mostrarMenu, App::iniciarPartida);
         ventana.mostrar();
     }
 }

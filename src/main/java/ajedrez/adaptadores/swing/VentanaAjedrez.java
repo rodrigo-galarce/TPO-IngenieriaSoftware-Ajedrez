@@ -42,18 +42,20 @@ public class VentanaAjedrez {
     private List<Posicion> movimientosDisponibles = List.of();
     private final int tamanoTableroVisual;
     private final Runnable volverAlMenu;
+    private final Runnable iniciarNuevaPartida;
     private boolean resultadoMostrado = false;
     private final JPanel panelNorte;
     private final JPanel panelSombras;
     private final ImageIcon auraNorte;
     private final ImageIcon auraSombras;
 
-    public VentanaAjedrez(IPartida partida, Runnable volverAlMenu) {
+    public VentanaAjedrez(IPartida partida, Runnable volverAlMenu, Runnable iniciarNuevaPartida) {
         this.partida = Objects.requireNonNull(partida);
         this.volverAlMenu = Objects.requireNonNull(volverAlMenu);
+        this.iniciarNuevaPartida = Objects.requireNonNull(iniciarNuevaPartida);
         casillas = new JLabel[8][8];
         piezaSeleccionada = null;
-        ventana = new JFrame("Ajedrez");
+        ventana = new JFrame("The Elder Chess: Skyrim");
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ventana.setResizable(false);
         auraNorte = new ImageIcon(Objects.requireNonNull(getClass().getResource("/imagenes/efectos/aura_blanco.gif"), "No se encontro el aura del Norte"));
@@ -202,11 +204,15 @@ public class VentanaAjedrez {
         relojBlancas.setForeground(new Color(210, 230, 245));
         relojNegras.setForeground(new Color(240, 195, 185));
 
-        JButton botonMenu = new JButton("MAIN MENU");
+        // boton menu y new game
+        JButton botonMenu = new BotonSkyrim("MAIN MENU");
         botonMenu.setFont(new Font("Serif", Font.BOLD, 16));
         botonMenu.setFocusPainted(false);
-
         botonMenu.addActionListener(e -> confirmarVolverAlMenu());
+        JButton botonNuevaPartida = new BotonSkyrim("NEW GAME");
+        botonNuevaPartida.setFont(new Font("Serif", Font.BOLD, 16));
+        botonNuevaPartida.setFocusPainted(false);
+        botonNuevaPartida.addActionListener(e -> confirmarNuevaPartida());
 
         // panel para poner los relojes uno al lado del otro
         JPanel panelRelojes = new JPanel(new GridLayout(1, 2, 20, 0));
@@ -274,8 +280,6 @@ public class VentanaAjedrez {
 
         actualizarRelojes();
         actualizarEstado();
-        ventana.pack();
-        ventana.setLocationRelativeTo(null);
 
         JLabel tituloJuego = new JLabel("THE ELDER CHESS: SKYRIM", SwingConstants.CENTER);
         tituloJuego.setFont(FuentesSwing.cargarFuente("/fuentes/CinzelDecorative-Bold.ttf", 30f));
@@ -283,14 +287,20 @@ public class VentanaAjedrez {
         JPanel panelSuperior = new JPanel(new BorderLayout());
         panelSuperior.setOpaque(false);
         panelSuperior.setBorder(BorderFactory.createEmptyBorder(10, 15, 5, 15));
-        // espacio izquierdo para mantener el titulo centrado
-        JPanel espacioIzquierdo = new JPanel();
-        espacioIzquierdo.setOpaque(false);
-        espacioIzquierdo.setPreferredSize(botonMenu.getPreferredSize());
-        panelSuperior.add(espacioIzquierdo, BorderLayout.WEST);
+
+        // ambos botones tienen el mismo tamaño
+        Dimension tamanoBoton = new Dimension(180, 52);
+        botonNuevaPartida.setPreferredSize(tamanoBoton);
+        botonMenu.setPreferredSize(tamanoBoton);
+
+        // botones en los extremos y titulo centrado
+        panelSuperior.add(botonNuevaPartida, BorderLayout.WEST);
         panelSuperior.add(tituloJuego, BorderLayout.CENTER);
         panelSuperior.add(botonMenu, BorderLayout.EAST);
+
         ventana.add(panelSuperior, BorderLayout.NORTH);
+        ventana.pack();
+        ventana.setLocationRelativeTo(null);
     }
 
     private JPanel crearPanelReloj(String nombreEjercito, JLabel reloj, Color colorFondo, Color colorBorde, Color colorTexto) {
@@ -397,6 +407,23 @@ public class VentanaAjedrez {
         }
     }
 
+    private void confirmarNuevaPartida() {
+        boolean relojEstabaActivo = temporizador.isRunning();
+        temporizador.stop();
+        int respuesta = JOptionPane.showConfirmDialog(ventana, "The current game will be lost. Start a new game?", "NEW GAME", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (respuesta == JOptionPane.YES_OPTION) {
+            temporizador.stop();
+            temporizadorAuras.stop();
+            ventana.dispose();
+            // App se encarga de crear una partida nueva
+            iniciarNuevaPartida.run();
+        } else {
+            if (relojEstabaActivo && !partida.estaFinalizada()) {
+                temporizador.start();
+            }
+        }
+    }
+
     private void seleccionarCasilla(Posicion posicion) {
         if (partida.estaFinalizada()) {
             return;
@@ -487,7 +514,6 @@ public class VentanaAjedrez {
                 casillas[fila][columna].setIcon(obtenerIcono(pieza));
             }
         }
-        ventana.setTitle("Ajedrez - Turno: " + partida.getTurnoActual());
     }
 
     private void actualizarEstado() {

@@ -36,12 +36,54 @@ public class VentanaMenu {
 
         ventana.setContentPane(panelFondo);
 
-        JLabel titulo = new JLabel("THE ELDER CHESS: SKYRIM");
-        titulo.setFont(FuentesSwing.cargarFuente("/fuentes/CinzelDecorative-Bold.ttf", 42f));
-        titulo.setForeground(new Color(235, 220, 190));
+        JLabel titulo = new JLabel("THE ELDER CHESS: SKYRIM", SwingConstants.CENTER) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                String texto = getText();
+                Font fuente = getFont();
+                FontMetrics medidas = g2.getFontMetrics(fuente);
 
-        JButton botonJugar = new JButton("NEW GAME");
-        JButton botonSalir = new JButton("EXIT");
+                int anchoDisponible = Math.max(1, getWidth() - 30);
+                int anchoTexto = medidas.stringWidth(texto);
+
+                // si el titulo no entra se reduce su fuente
+                if (anchoTexto > anchoDisponible) {
+                    float escala = (float) anchoDisponible / anchoTexto;
+                    fuente = fuente.deriveFont(fuente.getSize2D() * escala);
+                }
+                g2.setFont(fuente);
+                medidas = g2.getFontMetrics();
+                anchoTexto = medidas.stringWidth(texto);
+
+                int x = (getWidth() - anchoTexto) / 2;
+                int y = (getHeight() - medidas.getHeight()) / 2 + medidas.getAscent();
+                // sombra
+                g2.setColor(new Color(30, 20, 10, 210));
+                g2.drawString(texto, x + 4, y + 4);
+                // borde oscuro exterior
+                g2.setColor(new Color(95, 65, 25));
+                g2.drawString(texto, x - 1, y);
+                g2.drawString(texto, x + 1, y);
+                g2.drawString(texto, x, y - 1);
+                g2.drawString(texto, x, y + 1);
+                // brillo dorado intermedio
+                g2.setColor(new Color(185, 145, 75));
+                g2.drawString(texto, x, y);
+                // capa superior estilo metal dorado
+                g2.setColor(new Color(240, 225, 185));
+                g2.drawString(texto, x, y - 1);
+                g2.dispose();
+            }
+        };
+        titulo.setFont(FuentesSwing.cargarFuente("/fuentes/CinzelDecorative-Bold.ttf", 62f));
+        titulo.setPreferredSize(new Dimension(1, 120));
+        titulo.setOpaque(false);
+        titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton botonJugar = new BotonSkyrim("START");
+        JButton botonSalir = new BotonSkyrim("EXIT");
         Font fuenteBotones = FuentesSwing.cargarFuente("/fuentes/Cinzel-SemiBold.ttf", 22f);
 
         botonJugar.setFont(fuenteBotones);
@@ -63,19 +105,33 @@ public class VentanaMenu {
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.insets = new Insets(15, 15, 15, 15);
 
+        // TITULO
         gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(0, 15, 55, 15);
         panelFondo.add(titulo, gbc);
 
+        // START
         gbc.gridy = 1;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.insets = new Insets(5, 15, 12, 15);
         panelFondo.add(botonJugar, gbc);
 
+        // EXIT
         gbc.gridy = 2;
+        gbc.insets = new Insets(12, 15, 15, 15);
         panelFondo.add(botonSalir, gbc);
     }
 
     public void mostrar() {
+        ventana.setResizable(true);
+        ventana.setMinimumSize(new Dimension(700, 450));
+        ventana.setSize(1100, 700);
+        ventana.setLocationRelativeTo(null);
+        // el juego comienza maximizado
         ventana.setExtendedState(JFrame.MAXIMIZED_BOTH);
         ventana.setVisible(true);
     }
