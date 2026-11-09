@@ -37,6 +37,7 @@ public class VentanaAjedrez {
     private final JLabel relojBlancas;
     private final JLabel relojNegras;
     private final Timer temporizador;
+    private final Timer temporizadorAuras;
     private final Map<String, ImageIcon> iconosPiezas = new HashMap<>();
     private List<Posicion> movimientosDisponibles = List.of();
     private final int tamanoTableroVisual;
@@ -44,6 +45,8 @@ public class VentanaAjedrez {
     private boolean resultadoMostrado = false;
     private final JPanel panelNorte;
     private final JPanel panelSombras;
+    private final ImageIcon auraNorte;
+    private final ImageIcon auraSombras;
 
     public VentanaAjedrez(IPartida partida, Runnable volverAlMenu) {
         this.partida = Objects.requireNonNull(partida);
@@ -53,6 +56,8 @@ public class VentanaAjedrez {
         ventana = new JFrame("Ajedrez");
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ventana.setResizable(false);
+        auraNorte = new ImageIcon(Objects.requireNonNull(getClass().getResource("/imagenes/efectos/aura_blanco.gif"), "No se encontro el aura del Norte"));
+        auraSombras = new ImageIcon(Objects.requireNonNull(getClass().getResource("/imagenes/efectos/aura_negro.gif"), "No se encontro el aura de las Sombras"));
 
         Rectangle pantalla = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
         tamanoTableroVisual = Math.min(820, Math.min(pantalla.width - 80, pantalla.height - 160));
@@ -78,7 +83,35 @@ public class VentanaAjedrez {
         JPanel panelTablero = new JPanel(null) {
             @Override
             protected void paintComponent(Graphics g) {
-                super.paintComponent(g);g.drawImage(imagenTablero, 0, 0, getWidth(), getHeight(), this);
+                super.paintComponent(g);
+                // primero se dibuja el tablero
+                g.drawImage(imagenTablero, 0, 0, getWidth(), getHeight(), this);
+                // luego se dibujan las auras detras de las piezas
+                for (int fila = 0; fila < FILAS; fila++) {
+                    for (int columna = 0; columna < COLUMNAS; columna++) {
+                        Posicion posicion = new Posicion(fila, columna);
+                        Pieza pieza = partida.obtenerPieza(posicion);
+                        if (pieza == null || !partida.tieneKillstreak(pieza)) {
+                            continue;
+                        }
+                        JLabel casilla = casillas[fila][columna];
+                        if (casilla == null) {
+                            continue;
+                        }
+                        ImageIcon aura;
+                        if (pieza.getColor() == ColorPieza.BLANCO) {
+                            aura = auraNorte;
+                        } else {
+                            aura = auraSombras;
+                        }
+                        // El aura es mas grande que la casilla
+                        int tamanoAura = (int) Math.round(Math.min(casilla.getWidth(), casilla.getHeight()) * 1.5);
+                        // se centra el aura sobre la pieza
+                        int x = casilla.getX() + (casilla.getWidth() - tamanoAura) / 2;
+                        int y = casilla.getY() + (casilla.getHeight() - tamanoAura) / 2;
+                        g.drawImage(aura.getImage(), x, y, tamanoAura, tamanoAura, this);
+                    }
+                }
             }
         };
         panelTablero.setOpaque(false);
@@ -96,9 +129,9 @@ public class VentanaAjedrez {
                     @Override
                     protected void paintComponent(Graphics g) {
                         super.paintComponent(g);
+                        Posicion posicion = new Posicion(filaActual, columnaActual);
                         Graphics2D g2 = (Graphics2D) g.create();
                         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                        Posicion posicion = new Posicion(filaActual, columnaActual);
 
                         // resaltar la pieza seleccionada en celeste
                         if (posicion.equals(piezaSeleccionada)) {
@@ -234,6 +267,11 @@ public class VentanaAjedrez {
                 ((Timer) e.getSource()).stop();;
             }
         });
+
+        temporizadorAuras = new Timer(100, e -> {
+            panelTablero.repaint();
+        });
+
         actualizarRelojes();
         actualizarEstado();
         ventana.pack();
@@ -337,6 +375,7 @@ public class VentanaAjedrez {
         ventana.setExtendedState(JFrame.MAXIMIZED_BOTH);
         ventana.setVisible(true);
         temporizador.start();
+        temporizadorAuras.start();
     }
 
     private void confirmarVolverAlMenu() {
@@ -347,6 +386,7 @@ public class VentanaAjedrez {
 
         int respuesta = JOptionPane.showConfirmDialog(ventana, "The current game will be lost. Return to main menu?", "RETURN TO MAIN MENU", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (respuesta == JOptionPane.YES_OPTION) {
+            temporizadorAuras.stop();
             ventana.dispose();
             volverAlMenu.run();
         } else {
