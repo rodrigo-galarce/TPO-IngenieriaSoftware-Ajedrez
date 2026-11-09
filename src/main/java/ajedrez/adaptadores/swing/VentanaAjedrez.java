@@ -42,6 +42,8 @@ public class VentanaAjedrez {
     private final int tamanoTableroVisual;
     private final Runnable volverAlMenu;
     private boolean resultadoMostrado = false;
+    private final JPanel panelNorte;
+    private final JPanel panelSombras;
 
     public VentanaAjedrez(IPartida partida, Runnable volverAlMenu) {
         this.partida = Objects.requireNonNull(partida);
@@ -177,14 +179,36 @@ public class VentanaAjedrez {
         JPanel panelRelojes = new JPanel(new GridLayout(1, 2, 20, 0));
         panelRelojes.setOpaque(false);
         panelRelojes.setBorder(BorderFactory.createEmptyBorder(5, 30, 12, 30));
-        panelRelojes.add(relojBlancas);
-        panelRelojes.add(relojNegras);
+        panelNorte = crearPanelReloj("ARMY OF THE NORTH", relojBlancas, new Color(38, 59, 77), new Color(120, 157, 183), new Color(190, 220, 240));
+        panelSombras = crearPanelReloj("ARMY OF SHADOWS", relojNegras, new Color(56, 39, 45), new Color(164, 106, 99), new Color(235, 190, 180));
+        panelRelojes.add(panelNorte);
+        panelRelojes.add(panelSombras);
 
         // etiqueta para el turno y el jaque
-        etiquetaEstado = new JLabel();
+        etiquetaEstado = new JLabel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                String texto = getText();
+                if (texto != null && !texto.isEmpty()) {
+                    g2.setFont(getFont());
+                    FontMetrics medidas = g2.getFontMetrics();
+                    int anchoTexto = medidas.stringWidth(texto);
+                    int x = (getWidth() - anchoTexto) / 2;
+                    int y = (getHeight() - medidas.getHeight()) / 2 + medidas.getAscent();
+                    // sombra oscura
+                    g2.setColor(new Color(0, 0, 0, 220));
+                    g2.drawString(texto, x + 2, y + 2);
+                    // texto principal con el color del ejercito
+                    g2.setColor(getForeground());
+                    g2.drawString(texto, x, y);
+                }
+                g2.dispose();
+            }
+        };
         etiquetaEstado.setHorizontalAlignment(SwingConstants.CENTER);
-        etiquetaEstado.setFont(new Font("Arial", Font.BOLD, 16));
-        etiquetaEstado.setPreferredSize(new Dimension(560, 40));
+        etiquetaEstado.setFont(FuentesSwing.cargarFuente("/fuentes/Cinzel-SemiBold.ttf", 22f)); etiquetaEstado.setPreferredSize(new Dimension(560, 50));
         etiquetaEstado.setForeground(new Color(235, 220, 190));
         etiquetaEstado.setOpaque(false);
 
@@ -216,7 +240,7 @@ public class VentanaAjedrez {
         ventana.setLocationRelativeTo(null);
 
         JLabel tituloJuego = new JLabel("THE ELDER CHESS: SKYRIM", SwingConstants.CENTER);
-        tituloJuego.setFont(new Font("Serif", Font.BOLD, 30));
+        tituloJuego.setFont(FuentesSwing.cargarFuente("/fuentes/CinzelDecorative-Bold.ttf", 30f));
         tituloJuego.setForeground(new Color(235, 220, 190));
         JPanel panelSuperior = new JPanel(new BorderLayout());
         panelSuperior.setOpaque(false);
@@ -229,6 +253,43 @@ public class VentanaAjedrez {
         panelSuperior.add(tituloJuego, BorderLayout.CENTER);
         panelSuperior.add(botonMenu, BorderLayout.EAST);
         ventana.add(panelSuperior, BorderLayout.NORTH);
+    }
+
+    private JPanel crearPanelReloj(String nombreEjercito, JLabel reloj, Color colorFondo, Color colorBorde, Color colorTexto) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(colorFondo);
+        panel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(colorBorde, 2), BorderFactory.createEmptyBorder(8, 20, 8, 20)));
+        JLabel nombre = new JLabel(nombreEjercito);
+        nombre.setHorizontalAlignment(SwingConstants.CENTER);
+        nombre.setForeground(colorTexto);
+        nombre.setFont(FuentesSwing.cargarFuente("/fuentes/Cinzel-SemiBold.ttf", 14f));
+        reloj.setHorizontalAlignment(SwingConstants.CENTER);
+        reloj.setForeground(Color.WHITE);
+        reloj.setFont(FuentesSwing.cargarFuente("/fuentes/Cinzel-SemiBold.ttf", 26f));
+        panel.add(nombre, BorderLayout.NORTH);
+        panel.add(reloj, BorderLayout.CENTER);
+        return panel;
+    }
+
+    private void actualizarResaltadoRelojes() {
+        ColorPieza turno = partida.getTurnoActual();
+        boolean turnoNorte = !partida.estaFinalizada() && turno == ColorPieza.BLANCO;
+        boolean turnoSombras = !partida.estaFinalizada() && turno == ColorPieza.NEGRO;
+        actualizarBordeReloj(panelNorte, new Color(120, 157, 183), new Color(155, 225, 255), turnoNorte);
+        actualizarBordeReloj(panelSombras, new Color(164, 106, 99), new Color(255, 155, 135), turnoSombras);
+    }
+
+    private void actualizarBordeReloj(JPanel panel, Color colorNormal, Color colorActivo, boolean activo) {
+        Color colorBorde;
+        int grosor;
+        if (activo) {
+            colorBorde = colorActivo;
+            grosor = 4;
+        } else {
+            colorBorde = colorNormal;
+            grosor = 2;
+        }
+        panel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(colorBorde, grosor), BorderFactory.createEmptyBorder(8, 20, 8, 20)));
     }
 
     private ImageIcon obtenerIcono(Pieza pieza) {
@@ -390,6 +451,7 @@ public class VentanaAjedrez {
     }
 
     private void actualizarEstado() {
+        actualizarResaltadoRelojes();
         ColorPieza turno = partida.getTurnoActual();
         if (partida.estaFinalizada()) {
             String titulo;
@@ -421,18 +483,26 @@ public class VentanaAjedrez {
             }
             return;
         }
-        if (partida.estaEnJaque(turno)) {
-            etiquetaEstado.setText("Turno: " + turno + " - CHECK");
+        String nombreEjercito;
+        if (turno == ColorPieza.BLANCO) {
+            nombreEjercito = "ARMY OF THE NORTH";
+            etiquetaEstado.setForeground(new Color(166, 221, 247));
         } else {
-            etiquetaEstado.setText("Turno: " + turno);
+            nombreEjercito = "ARMY OF SHADOWS";
+            etiquetaEstado.setForeground(new Color(231, 166, 151));
+        }
+        if (partida.estaEnJaque(turno)) {
+            etiquetaEstado.setText("TURN: " + nombreEjercito + " - CHECK");
+        } else {
+            etiquetaEstado.setText("TURN: " + nombreEjercito);
         }
     }
 
     private void actualizarRelojes() {
         int segundosBlancas = partida.getSegundosRestantes(ColorPieza.BLANCO);
         int segundosNegras = partida.getSegundosRestantes(ColorPieza.NEGRO);
-        relojBlancas.setText("Blancas: " + formatearTiempo(segundosBlancas));
-        relojNegras.setText("Negras: " + formatearTiempo(segundosNegras));
+        relojBlancas.setText(formatearTiempo(segundosBlancas));
+        relojNegras.setText(formatearTiempo(segundosNegras));
     }
 
     private String formatearTiempo(int segundosTotales) {

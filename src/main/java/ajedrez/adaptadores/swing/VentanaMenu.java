@@ -3,8 +3,6 @@ package ajedrez.adaptadores.swing;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
-import java.io.IOException;
-import java.io.InputStream;
 
 public class VentanaMenu {
     private final JFrame ventana;
@@ -39,12 +37,12 @@ public class VentanaMenu {
         ventana.setContentPane(panelFondo);
 
         JLabel titulo = new JLabel("THE ELDER CHESS: SKYRIM");
-        titulo.setFont(cargarFuente("/fuentes/CinzelDecorative-Bold.ttf", 42f));
+        titulo.setFont(FuentesSwing.cargarFuente("/fuentes/CinzelDecorative-Bold.ttf", 42f));
         titulo.setForeground(new Color(235, 220, 190));
 
         JButton botonJugar = new JButton("NEW GAME");
         JButton botonSalir = new JButton("EXIT");
-        Font fuenteBotones = cargarFuente("/fuentes/Cinzel-SemiBold.ttf", 22f);
+        Font fuenteBotones = FuentesSwing.cargarFuente("/fuentes/Cinzel-SemiBold.ttf", 22f);
 
         botonJugar.setFont(fuenteBotones);
         botonSalir.setFont(fuenteBotones);
@@ -80,14 +78,5 @@ public class VentanaMenu {
     public void mostrar() {
         ventana.setExtendedState(JFrame.MAXIMIZED_BOTH);
         ventana.setVisible(true);
-    }
-
-    private Font cargarFuente(String ruta, float tamano) {
-        try (InputStream archivo = Objects.requireNonNull(getClass().getResourceAsStream(ruta), "No se encontro la fuente: " + ruta)) {
-            Font fuente = Font.createFont(Font.TRUETYPE_FONT, archivo);
-            return fuente.deriveFont(tamano);
-        } catch (IOException | FontFormatException e) {
-            throw new IllegalStateException("Error al cargar la fuente: " + ruta, e);
-        }
     }
 }
