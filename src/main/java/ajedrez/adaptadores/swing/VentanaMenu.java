@@ -39,31 +39,37 @@ public class VentanaMenu {
         JLabel titulo = new TituloSkyrim("THE ELDER CHESS: SKYRIM", 62f);
         titulo.setPreferredSize(new Dimension(1000, 120));
         titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
-        titulo.setFont(FuentesSwing.cargarFuente("/fuentes/CinzelDecorative-Bold.ttf", 62f));
+        titulo.setFont(FuentesSkyrim.cargarFuente("/fuentes/CinzelDecorative-Bold.ttf", 62f));
         titulo.setPreferredSize(new Dimension(1, 120));
         titulo.setOpaque(false);
         titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JButton botonJugar = new BotonSkyrim("START");
         JButton botonSalir = new BotonSkyrim("EXIT");
-        Font fuenteBotones = FuentesSwing.cargarFuente("/fuentes/Cinzel-SemiBold.ttf", 22f);
+        JButton botonSonido = new BotonSonido();
+        Font fuenteBotones = FuentesSkyrim.cargarFuente("/fuentes/Cinzel-SemiBold.ttf", 22f);
 
         botonJugar.setFont(fuenteBotones);
         botonSalir.setFont(fuenteBotones);
 
         botonJugar.setPreferredSize(new Dimension(280, 55));
         botonSalir.setPreferredSize(new Dimension(280, 55));
+        botonSonido.setPreferredSize(new Dimension(220, 48));
 
         botonJugar.setFocusPainted(false);
         botonSalir.setFocusPainted(false);
 
         // Al comenzar, cerramos el menu y creamos la partida.
         botonJugar.addActionListener(e -> {
+            SonidoSkyrim.detenerMusicaMenu();
             ventana.dispose();
             iniciarPartida.run();
         });
 
-        botonSalir.addActionListener(e -> ventana.dispose());
+        botonSalir.addActionListener(e -> {
+            SonidoSkyrim.detenerMusicaMenu();
+            ventana.dispose();
+        });
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -86,6 +92,11 @@ public class VentanaMenu {
         gbc.gridy = 2;
         gbc.insets = new Insets(12, 15, 15, 15);
         panelFondo.add(botonSalir, gbc);
+
+        // SONIDO
+        gbc.gridy = 3;
+        gbc.insets = new Insets(20, 15, 15, 15);
+        panelFondo.add(botonSonido, gbc);
     }
 
     public void mostrar() {
@@ -96,5 +107,6 @@ public class VentanaMenu {
         // el juego comienza maximizado
         ventana.setExtendedState(JFrame.MAXIMIZED_BOTH);
         ventana.setVisible(true);
+        SonidoSkyrim.iniciarMusicaMenu();
     }
 }

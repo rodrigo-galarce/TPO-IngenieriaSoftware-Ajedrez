@@ -21,10 +21,6 @@ public class VentanaAjedrez {
     private static final int FILAS = 8;
     private static final int COLUMNAS = 8;
 
-    // tamaño visual del tablero en pantalla
-    private static final int ANCHO_TABLERO_VISUAL = 820;
-    private static final int ALTO_TABLERO_VISUAL = 820;
-
     // zona interna donde están las 64 casillas dentro del png
     private static final int ZONA_CASILLAS_X = 272;
     private static final int ZONA_CASILLAS_Y = 208;
@@ -172,7 +168,6 @@ public class VentanaAjedrez {
                 casilla.setHorizontalAlignment(SwingConstants.CENTER);
                 casilla.setVerticalAlignment(SwingConstants.BOTTOM);
                 casilla.setOpaque(false);
-                casilla.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 44));
 
                 ubicarCasilla(casilla, fila, columna, tamanoTableroVisual);
 
@@ -197,23 +192,13 @@ public class VentanaAjedrez {
         // se crean los dos relojes
         relojBlancas = new JLabel();
         relojNegras = new JLabel();
-        relojBlancas.setHorizontalAlignment(SwingConstants.CENTER);
-        relojNegras.setHorizontalAlignment(SwingConstants.CENTER);
-        Font fuenteReloj = new Font("Arial", Font.BOLD, 22);
-        relojBlancas.setFont(fuenteReloj);
-        relojNegras.setFont(fuenteReloj);
-        relojBlancas.setForeground(new Color(210, 230, 245));
-        relojNegras.setForeground(new Color(240, 195, 185));
 
         // boton menu y new game
         JButton botonMenu = new BotonSkyrim("MAIN MENU");
-        botonMenu.setFont(new Font("Serif", Font.BOLD, 16));
-        botonMenu.setFocusPainted(false);
         botonMenu.addActionListener(e -> confirmarVolverAlMenu());
         JButton botonNuevaPartida = new BotonSkyrim("NEW GAME");
-        botonNuevaPartida.setFont(new Font("Serif", Font.BOLD, 16));
-        botonNuevaPartida.setFocusPainted(false);
         botonNuevaPartida.addActionListener(e -> confirmarNuevaPartida());
+        JButton botonSonido = new BotonSonido();
 
         // panel para poner los relojes uno al lado del otro
         JPanel panelRelojes = new JPanel(new GridLayout(1, 2, 20, 0));
@@ -248,7 +233,7 @@ public class VentanaAjedrez {
             }
         };
         etiquetaEstado.setHorizontalAlignment(SwingConstants.CENTER);
-        etiquetaEstado.setFont(FuentesSwing.cargarFuente("/fuentes/Cinzel-SemiBold.ttf", 22f)); etiquetaEstado.setPreferredSize(new Dimension(560, 50));
+        etiquetaEstado.setFont(FuentesSkyrim.cargarFuente("/fuentes/Cinzel-SemiBold.ttf", 22f)); etiquetaEstado.setPreferredSize(new Dimension(560, 50));
         etiquetaEstado.setForeground(new Color(235, 220, 190));
         etiquetaEstado.setOpaque(false);
 
@@ -300,7 +285,7 @@ public class VentanaAjedrez {
             actualizarRelojes();
             actualizarEstado();
             if (partida.estaFinalizada()) {
-                ((Timer) e.getSource()).stop();;
+                ((Timer) e.getSource()).stop();
             }
         });
 
@@ -312,21 +297,31 @@ public class VentanaAjedrez {
         actualizarEstado();
 
         JLabel tituloJuego = new TituloSkyrim("THE ELDER CHESS: SKYRIM", 30f);
-        tituloJuego.setFont(FuentesSwing.cargarFuente("/fuentes/CinzelDecorative-Bold.ttf", 30f));
-        tituloJuego.setOpaque(false);
         JPanel panelSuperior = new JPanel(new BorderLayout());
         panelSuperior.setOpaque(false);
         panelSuperior.setBorder(BorderFactory.createEmptyBorder(10, 15, 5, 15));
 
-        // ambos botones tienen el mismo tamaño
         Dimension tamanoBoton = new Dimension(180, 52);
         botonNuevaPartida.setPreferredSize(tamanoBoton);
         botonMenu.setPreferredSize(tamanoBoton);
+        botonSonido.setPreferredSize(tamanoBoton);
 
-        // botones en los extremos y titulo centrado
-        panelSuperior.add(botonNuevaPartida, BorderLayout.WEST);
+        // panel izquierdo: NEW GAME y un espacio vacio
+        JPanel panelIzquierdo = new JPanel(new GridLayout(2, 1, 0, 8));
+        panelIzquierdo.setOpaque(false);
+        JPanel espacioVacio = new JPanel();
+        espacioVacio.setOpaque(false);
+        panelIzquierdo.add(botonNuevaPartida);
+        panelIzquierdo.add(espacioVacio);
+        // panel derecho: MAIN MENU y SOUND ON/OFF
+        JPanel panelDerecho = new JPanel(new GridLayout(2, 1, 0, 8));
+        panelDerecho.setOpaque(false);
+        panelDerecho.add(botonMenu);
+        panelDerecho.add(botonSonido);
+        // ambos lados tienen el mismo tamaño
+        panelSuperior.add(panelIzquierdo, BorderLayout.WEST);
         panelSuperior.add(tituloJuego, BorderLayout.CENTER);
-        panelSuperior.add(botonMenu, BorderLayout.EAST);
+        panelSuperior.add(panelDerecho, BorderLayout.EAST);
 
         ventana.add(panelSuperior, BorderLayout.NORTH);
         ventana.pack();
@@ -340,10 +335,10 @@ public class VentanaAjedrez {
         JLabel nombre = new JLabel(nombreEjercito);
         nombre.setHorizontalAlignment(SwingConstants.CENTER);
         nombre.setForeground(colorTexto);
-        nombre.setFont(FuentesSwing.cargarFuente("/fuentes/Cinzel-SemiBold.ttf", 14f));
+        nombre.setFont(FuentesSkyrim.cargarFuente("/fuentes/Cinzel-SemiBold.ttf", 14f));
         reloj.setHorizontalAlignment(SwingConstants.CENTER);
         reloj.setForeground(Color.WHITE);
-        reloj.setFont(FuentesSwing.cargarFuente("/fuentes/Cinzel-SemiBold.ttf", 26f));
+        reloj.setFont(FuentesSkyrim.cargarFuente("/fuentes/Cinzel-SemiBold.ttf", 26f));
         panel.add(nombre, BorderLayout.NORTH);
         panel.add(reloj, BorderLayout.CENTER);
         return panel;
@@ -442,7 +437,6 @@ public class VentanaAjedrez {
         temporizador.stop();
         int respuesta = JOptionPane.showConfirmDialog(ventana, "The current game will be lost. Start a new game?", "NEW GAME", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (respuesta == JOptionPane.YES_OPTION) {
-            temporizador.stop();
             temporizadorAuras.stop();
             ventana.dispose();
             // App se encarga de crear una partida nueva
@@ -488,6 +482,11 @@ public class VentanaAjedrez {
         // 2do clic - intenta realizar el movimiento
         try {
             Pieza piezaOrigen = partida.obtenerPieza(piezaSeleccionada);
+            Pieza piezaDestinoAntes = partida.obtenerPieza(posicion);
+            boolean huboCaptura = piezaDestinoAntes != null;
+            if (piezaOrigen.getTipo() == TipoPieza.PEON && piezaSeleccionada.columna() != posicion.columna()) {
+                huboCaptura = true;
+            }
             boolean promociona = piezaOrigen.getTipo() == TipoPieza.PEON && ((piezaOrigen.getColor() == ColorPieza.BLANCO && posicion.fila() == 0)
                     || (piezaOrigen.getColor() == ColorPieza.NEGRO && posicion.fila() == 7));
             if (promociona) {
@@ -498,6 +497,18 @@ public class VentanaAjedrez {
                 partida.moverPieza(piezaSeleccionada, posicion, tipoElegido);
             } else {
                 partida.moverPieza(piezaSeleccionada, posicion);
+            }
+            boolean hayJaque = !partida.estaFinalizada() && partida.estaEnJaque(partida.getTurnoActual());
+            Pieza piezaMovida = partida.obtenerPieza(posicion);
+            boolean capturaConKillstreak = huboCaptura && partida.tieneKillstreak(piezaMovida);
+            if (capturaConKillstreak) {
+                SonidoSkyrim.reproducirEfecto("captura_killstreak.wav");
+            } else if (hayJaque) {
+                SonidoSkyrim.reproducirEfecto("jaque.wav");
+            } else if (huboCaptura) {
+                SonidoSkyrim.reproducirEfecto("captura.wav");
+            } else {
+                SonidoSkyrim.reproducirEfecto("movimiento.wav");
             }
             piezaSeleccionada = null;
             actualizarPiezas();
@@ -575,6 +586,9 @@ public class VentanaAjedrez {
             if (!resultadoMostrado) {
                 resultadoMostrado = true;
                 temporizador.stop();
+                if (titulo.equals("CHECKMATE")) {
+                    SonidoSkyrim.reproducirEfecto("jaque_mate.wav");
+                }
                 JOptionPane.showMessageDialog(ventana, mensaje, titulo, JOptionPane.INFORMATION_MESSAGE);
             }
             return;

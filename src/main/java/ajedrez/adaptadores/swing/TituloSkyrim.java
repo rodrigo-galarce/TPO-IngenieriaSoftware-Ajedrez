@@ -6,7 +6,7 @@ import java.awt.*;
 public class TituloSkyrim extends JLabel {
     public TituloSkyrim(String texto, float tamanoFuente) {
         super(texto, SwingConstants.CENTER);
-        setFont(FuentesSwing.cargarFuente("/fuentes/CinzelDecorative-Bold.ttf", tamanoFuente));
+        setFont(FuentesSkyrim.cargarFuente("/fuentes/CinzelDecorative-Bold.ttf", tamanoFuente));
         setOpaque(false);
     }
 

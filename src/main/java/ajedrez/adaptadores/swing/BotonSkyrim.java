@@ -14,7 +14,7 @@ public class BotonSkyrim extends JButton {
 
     public BotonSkyrim (String texto) {
         super(texto);
-        setFont(FuentesSwing.cargarFuente("/fuentes/Cinzel-SemiBold.ttf", 18f));
+        setFont(FuentesSkyrim.cargarFuente("/fuentes/Cinzel-SemiBold.ttf", 18f));
         setForeground(new Color(240, 218, 174));
         setBackground(FONDO_NORMAL);
         setFocusPainted(false);
