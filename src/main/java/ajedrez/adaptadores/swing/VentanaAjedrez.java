@@ -24,8 +24,9 @@ public class VentanaAjedrez {
     // zona interna donde están las 64 casillas dentro del png
     private static final int ZONA_CASILLAS_X = 272;
     private static final int ZONA_CASILLAS_Y = 208;
-    private static final int ZONA_CASILLAS_ANCHO = 1508;
-    private static final int ZONA_CASILLAS_ALTO = 1495;
+    private static final int ZONA_CASILLAS_ANCHO = 1504;
+    private static final int ZONA_CASILLAS_ALTO = 1504;
+    private static final int OFFSET_SELECCION_Y = 1;
 
     private final JFrame ventana;
     private final IPartida partida;
@@ -139,10 +140,10 @@ public class VentanaAjedrez {
                         // resaltar la pieza seleccionada en celeste
                         if (posicion.equals(piezaSeleccionada)) {
                             g2.setColor(new Color(100, 190, 255, 45));
-                            g2.fillRoundRect(2, 2, getWidth() - 4, getHeight() - 4, 12, 12);
+                            g2.fillRoundRect(0, OFFSET_SELECCION_Y, getWidth(), getHeight() - OFFSET_SELECCION_Y, 6, 6);
                             g2.setColor(new Color(130, 210, 255, 190));
-                            g2.setStroke(new BasicStroke(2.5f));
-                            g2.drawRoundRect(3, 3, getWidth() - 7, getHeight() - 7, 12, 12);
+                            g2.setStroke(new BasicStroke(2f));
+                            g2.drawRoundRect(1, 1 + OFFSET_SELECCION_Y, getWidth() - 3, getHeight() - 3 - OFFSET_SELECCION_Y, 6, 6);
                         }
                         // dibujar los destinos legales
                         if (movimientosDisponibles.contains(posicion)) {
